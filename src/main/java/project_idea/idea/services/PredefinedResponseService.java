@@ -62,4 +62,16 @@ public class PredefinedResponseService {
                         Collectors.counting()
                 ));
     }
+
+    public void deleteResponse(UUID responseId, User currentUser) {
+        PredefinedResponse response = responseRepository.findById(responseId)
+            .orElseThrow(() -> new BadRequestException("Response not found"));
+        
+        if (!response.getUser().getId().equals(currentUser.getId()) &&
+            !response.getSurvey().getAuthor().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("You can only delete your own responses or responses to your surveys");
+        }
+        
+        responseRepository.delete(response);
+    }
 }

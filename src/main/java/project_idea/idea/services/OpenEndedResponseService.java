@@ -6,6 +6,7 @@ import project_idea.idea.entities.OpenEndedResponse;
 import project_idea.idea.entities.OpenEndedSurvey;
 import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.BadRequestException;
+import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.OpenEndedSurveyResponseDTO;
 import project_idea.idea.repositories.OpenEndedResponseRepository;
 
@@ -42,5 +43,17 @@ public class OpenEndedResponseService {
     public List<OpenEndedResponse> getSurveyResponses(UUID surveyId) {
         OpenEndedSurvey survey = surveyService.getSurveyById(surveyId);
         return responseRepository.findBySurvey(survey);
+    }
+
+    public void deleteResponse(UUID responseId, User currentUser) {
+        OpenEndedResponse response = responseRepository.findById(responseId)
+            .orElseThrow(() -> new NotFoundException(responseId));
+        
+        if (!response.getUser().getId().equals(currentUser.getId()) &&
+            !response.getSurvey().getAuthor().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("You can only delete your own responses or responses to your surveys");
+        }
+        
+        responseRepository.delete(response);
     }
 }

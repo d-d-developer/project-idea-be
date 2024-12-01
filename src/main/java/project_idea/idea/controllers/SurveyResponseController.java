@@ -84,4 +84,22 @@ public class SurveyResponseController {
     public Map<String, Long> getResponseStatistics(@PathVariable UUID surveyId) {
         return predefinedResponseService.getResponseStatistics(surveyId);
     }
+
+    @DeleteMapping("/open-ended/{responseId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete an open-ended survey response")
+    public void deleteOpenEndedResponse(
+            @PathVariable UUID responseId,
+            @AuthenticationPrincipal User currentUser) {
+        openEndedResponseService.deleteResponse(responseId, currentUser);
+    }
+
+    @DeleteMapping("/predefined/{responseId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete a predefined survey response")
+    public void deletePredefinedResponse(
+            @PathVariable UUID responseId,
+            @AuthenticationPrincipal User currentUser) {
+        predefinedResponseService.deleteResponse(responseId, currentUser);
+    }
 }
