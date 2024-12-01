@@ -12,6 +12,7 @@ import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
+import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.repositories.OpenEndedSurveyRepository;
 
 import java.util.UUID;
@@ -63,6 +64,26 @@ public class OpenEndedSurveyService {
 
         survey.setTitle(surveyDTO.title());
         survey.setDescription(surveyDTO.description());
+        return surveyRepository.save(survey);
+    }
+
+    public OpenEndedSurvey patchSurvey(UUID id, PartialSurveyUpdateDTO surveyDTO, User currentUser) {
+        OpenEndedSurvey survey = getSurveyById(id);
+        
+        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("You can only update your own surveys");
+        }
+
+        if (surveyDTO.title() != null) {
+            survey.setTitle(surveyDTO.title());
+        }
+        if (surveyDTO.description() != null) {
+            survey.setDescription(surveyDTO.description());
+        }
+        if (surveyDTO.active() != null) {
+            survey.setActive(surveyDTO.active());
+        }
+
         return surveyRepository.save(survey);
     }
 }

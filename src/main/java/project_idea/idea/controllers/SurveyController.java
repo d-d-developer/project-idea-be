@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.OpenEndedSurvey;
 import project_idea.idea.entities.PredefinedSurvey;
 import project_idea.idea.entities.User;
+import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.ErrorsResponseDTO;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
+import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.services.OpenEndedSurveyService;
 import project_idea.idea.services.PredefinedSurveyService;
 
@@ -98,5 +100,17 @@ public class SurveyController {
     public void deleteSurvey(@PathVariable UUID id, 
                             @AuthenticationPrincipal User currentUser) {
         openEndedSurveyService.deleteSurvey(id, currentUser);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Partially update survey")
+    public Object patchSurvey(@PathVariable UUID id, 
+                             @RequestBody @Valid PartialSurveyUpdateDTO surveyDTO,
+                             @AuthenticationPrincipal User currentUser) {
+        try {
+            return openEndedSurveyService.patchSurvey(id, surveyDTO, currentUser);
+        } catch (NotFoundException e) {
+            return predefinedSurveyService.patchSurvey(id, surveyDTO, currentUser);
+        }
     }
 }

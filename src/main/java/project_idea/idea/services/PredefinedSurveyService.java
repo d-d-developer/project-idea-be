@@ -12,6 +12,7 @@ import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
+import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.repositories.PredefinedSurveyRepository;
 
 import java.util.UUID;
@@ -71,6 +72,32 @@ public class PredefinedSurveyService {
         survey.setDescription(surveyDTO.description());
         survey.setAllowMultipleAnswers(surveyDTO.allowMultipleAnswers());
         survey.setOptions(surveyDTO.options());
+
+        return surveyRepository.save(survey);
+    }
+
+    public PredefinedSurvey patchSurvey(UUID id, PartialSurveyUpdateDTO surveyDTO, User currentUser) {
+        PredefinedSurvey survey = getSurveyById(id);
+        
+        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("You can only update your own surveys");
+        }
+
+        if (surveyDTO.title() != null) {
+            survey.setTitle(surveyDTO.title());
+        }
+        if (surveyDTO.description() != null) {
+            survey.setDescription(surveyDTO.description());
+        }
+        if (surveyDTO.active() != null) {
+            survey.setActive(surveyDTO.active());
+        }
+        if (surveyDTO.allowMultipleAnswers() != null) {
+            survey.setAllowMultipleAnswers(surveyDTO.allowMultipleAnswers());
+        }
+        if (surveyDTO.options() != null && !surveyDTO.options().isEmpty()) {
+            survey.setOptions(surveyDTO.options());
+        }
 
         return surveyRepository.save(survey);
     }
