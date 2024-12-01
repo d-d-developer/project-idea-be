@@ -1,0 +1,80 @@
+package project_idea.idea.services;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import project_idea.idea.entities.Survey;
+import project_idea.idea.entities.SurveyResponse;
+import project_idea.idea.entities.User;
+import project_idea.idea.exceptions.BadRequestException;
+import project_idea.idea.payloads.survey.SurveyResponseDTO;
+import project_idea.idea.repositories.SurveyResponseRepository;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+public class SurveyResponseService {
+    @Autowired
+    private SurveyResponseRepository surveyResponseRepository;
+    
+    @Autowired
+    private SurveyService surveyService;
+
+    public SurveyResponse submitResponse(SurveyResponseDTO responseDTO, User currentUser) {
+        Survey survey = surveyService.getSurveyById(responseDTO.surveyId());
+        
+        // Check if user has already responded
+        if (surveyResponseRepository.findBySurveyAndUser(survey, currentUser).isPresent()) {
+            throw new BadRequestException("You have already responded to this survey");
+        }
+
+        // Validate response type matches survey type
+        if (survey.isOpenEnded() && responseDTO.selectedOptions() != null) {
+            throw new BadRequestException("This is an open-ended survey");
+        }
+        if (!survey.isOpenEnded() && responseDTO.openEndedResponse() != null) {
+            throw new BadRequestException("This is a multiple choice survey");
+        }
+
+        // Validate multiple answers
+        if (!survey.isAllowMultipleAnswers() && 
+            responseDTO.selectedOptions() != null && 
+            responseDTO.selectedOptions().size() > 1) {
+            throw new BadRequestException("This survey does not allow multiple answers");
+        }
+
+        SurveyResponse response = new SurveyResponse();
+        response.setSurvey(survey);
+        response.setUser(currentUser);
+        
+        if (survey.isOpenEnded()) {
+            response.setOpenEndedResponse(responseDTO.openEndedResponse());
+        } else {
+            response.setSelectedOptions(responseDTO.selectedOptions());
+        }
+
+        return surveyResponseRepository.save(response);
+    }
+
+    public List<SurveyResponse> getSurveyResponses(UUID surveyId) {
+        Survey survey = surveyService.getSurveyById(surveyId);
+        return surveyResponseRepository.findBySurvey(survey);
+    }
+
+    public Map<String, Long> getResponseStatistics(UUID surveyId) {
+        Survey survey = surveyService.getSurveyById(surveyId);
+        if (survey.isOpenEnded()) {
+            throw new BadRequestException("Statistics are not available for open-ended surveys");
+        }
+
+        List<SurveyResponse> responses = surveyResponseRepository.findBySurvey(survey);
+        return responses.stream()
+                .flatMap(response -> response.getSelectedOptions().stream())
+                .collect(Collectors.groupingBy(
+                        option -> option,
+                        Collectors.counting()
+                ));
+    }
+}

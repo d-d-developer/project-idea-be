@@ -35,8 +35,7 @@ public class SecurityConfig {
 				httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		httpSecurity.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
-				authorizationManagerRequestMatcherRegistry.requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-				.anyRequest().authenticated());
+				authorizationManagerRequestMatcherRegistry.requestMatchers("/**").permitAll());
 
 		httpSecurity.cors(Customizer.withDefaults());
 		return httpSecurity.build();

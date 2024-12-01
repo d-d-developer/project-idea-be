@@ -15,7 +15,7 @@ public class ExceptionsHandler {
 	@ExceptionHandler(BadRequestException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST) // 400
 	public ErrorsResponseDTO handleBadrequest(BadRequestException ex) {
-		return new ErrorsResponseDTO("Invalid request", LocalDateTime.now());
+		return new ErrorsResponseDTO(ex.getMessage(), LocalDateTime.now());
 	}
 
 	@ExceptionHandler(UnauthorizedException.class)
