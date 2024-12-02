@@ -101,4 +101,16 @@ public class UsersController {
         this.usersService.findByIdAndDelete(userId);
     }
 
+    @PostMapping("/{userId}/roles/{roleId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public User addRoleToUser(@PathVariable UUID userId, @PathVariable UUID roleId) {
+        return this.usersService.addRoleToUser(userId, roleId);
+    }
+
+    @DeleteMapping("/{userId}/roles/{roleId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public User removeRoleFromUser(@PathVariable UUID userId, @PathVariable UUID roleId) {
+        return this.usersService.removeRoleFromUser(userId, roleId);
+    }
+
 }
