@@ -1,7 +1,7 @@
 package project_idea.idea.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "predefined_surveys")
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class PredefinedSurvey extends BaseSurvey {
     private boolean allowMultipleAnswers = false;
 
@@ -21,7 +23,7 @@ public class PredefinedSurvey extends BaseSurvey {
     @CollectionTable(name = "survey_options")
     private List<String> options = new ArrayList<>();
 
-    @OneToMany(mappedBy = "survey")
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<PredefinedResponse> responses = new ArrayList<>();
 }

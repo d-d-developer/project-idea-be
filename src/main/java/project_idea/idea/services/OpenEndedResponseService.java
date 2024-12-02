@@ -24,6 +24,11 @@ public class OpenEndedResponseService {
     public OpenEndedResponse submitResponse(UUID surveyId, OpenEndedSurveyResponseDTO responseDTO, User currentUser) {
         OpenEndedSurvey survey = surveyService.getSurveyById(surveyId);
         
+        // Prevent users from responding to their own surveys
+        if (survey.getAuthor().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("You cannot respond to your own survey");
+        }
+
         if (responseRepository.findBySurveyAndUser(survey, currentUser).isPresent()) {
             throw new BadRequestException("You have already responded to this survey");
         }

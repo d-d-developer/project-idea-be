@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/survey-responses")
+@RequestMapping("/responses")
 @Tag(name = "Survey Responses", description = "APIs for submitting and analyzing survey responses")
 @ApiResponses(value = {
     @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),

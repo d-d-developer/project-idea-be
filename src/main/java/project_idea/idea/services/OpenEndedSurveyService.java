@@ -18,30 +18,37 @@ import project_idea.idea.repositories.OpenEndedSurveyRepository;
 import java.util.UUID;
 
 @Service
-public class OpenEndedSurveyService {
-    @Autowired
-    private OpenEndedSurveyRepository surveyRepository;
+public class OpenEndedSurveyService extends BaseSurveyService<OpenEndedSurvey> {
+    public OpenEndedSurveyService(OpenEndedSurveyRepository repository) {
+        super(repository);
+    }
 
-    public OpenEndedSurvey createSurvey(NewSurveyDTO surveyDTO, User author) {
+    @Override
+    protected void validateSurveyCreation(NewSurveyDTO surveyDTO) {
+        if (!surveyDTO.isOpenEnded()) {
+            throw new BadRequestException("Survey must be marked as open-ended");
+        }
+        
+        if (surveyDTO.options() != null && !surveyDTO.options().isEmpty()) {
+            throw new BadRequestException("Open-ended surveys cannot have predefined options");
+        }
+    }
+
+    @Override
+    protected OpenEndedSurvey createSurveyInstance(NewSurveyDTO surveyDTO) {
         if (!surveyDTO.isOpenEnded()) {
             throw new BadRequestException("This Data Transfer Object is not for an open-ended survey");
         }
-
-        OpenEndedSurvey survey = new OpenEndedSurvey();
-        survey.setTitle(surveyDTO.title());
-        survey.setDescription(surveyDTO.description());
-        survey.setAuthor(author);
-
-        return surveyRepository.save(survey);
+        return new OpenEndedSurvey();
     }
 
     public Page<OpenEndedSurvey> getAllSurveys(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return surveyRepository.findAll(pageable);
+        return repository.findAll(pageable);
     }
 
     public OpenEndedSurvey getSurveyById(UUID id) {
-        return surveyRepository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id));
     }
 
@@ -52,19 +59,15 @@ public class OpenEndedSurveyService {
             throw new BadRequestException("You can only delete your own surveys");
         }
 
-        surveyRepository.delete(survey);
+        repository.delete(survey);
     }
 
-    public Object updateSurvey(UUID id, @Valid NewSurveyDTO surveyDTO, User currentUser) {
+    public OpenEndedSurvey updateSurvey(UUID id, @Valid NewSurveyDTO surveyDTO, User currentUser) {
         OpenEndedSurvey survey = getSurveyById(id);
-
-        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
-            throw new BadRequestException("You can only update your own surveys");
-        }
-
+        validateOwnership(survey, currentUser);
         survey.setTitle(surveyDTO.title());
         survey.setDescription(surveyDTO.description());
-        return surveyRepository.save(survey);
+        return repository.save(survey);
     }
 
     public OpenEndedSurvey patchSurvey(UUID id, PartialSurveyUpdateDTO surveyDTO, User currentUser) {
@@ -84,6 +87,6 @@ public class OpenEndedSurveyService {
             survey.setActive(surveyDTO.active());
         }
 
-        return surveyRepository.save(survey);
+        return repository.save(survey);
     }
 }

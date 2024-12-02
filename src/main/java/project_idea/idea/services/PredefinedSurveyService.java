@@ -18,36 +18,46 @@ import project_idea.idea.repositories.PredefinedSurveyRepository;
 import java.util.UUID;
 
 @Service
-public class PredefinedSurveyService {
-    @Autowired
-    private PredefinedSurveyRepository surveyRepository;
+public class PredefinedSurveyService extends BaseSurveyService<PredefinedSurvey> {
+    public PredefinedSurveyService(PredefinedSurveyRepository repository) {
+        super(repository);
+    }
 
-    public PredefinedSurvey createSurvey(NewSurveyDTO surveyDTO, User author) {
+    @Override
+    protected void validateSurveyCreation(NewSurveyDTO surveyDTO) {
+        if (surveyDTO.isOpenEnded()) {
+            throw new BadRequestException("Survey must not be marked as open-ended");
+        }
+        
+        if (surveyDTO.options() == null || surveyDTO.options().size() < 2) {
+            throw new BadRequestException("Predefined surveys must have at least 2 options");
+        }
+        
+        // Check for duplicate options
+        long uniqueOptionsCount = surveyDTO.options().stream().distinct().count();
+        if (uniqueOptionsCount != surveyDTO.options().size()) {
+            throw new BadRequestException("Survey options must be unique");
+        }
+    }
+
+    @Override
+    protected PredefinedSurvey createSurveyInstance(NewSurveyDTO surveyDTO) {
         if (surveyDTO.isOpenEnded()) {
             throw new BadRequestException("This Data Transfer Object is not for a predefined survey");
         }
-
-        if (surveyDTO.options() == null || surveyDTO.options().size() < 2) {
-            throw new BadRequestException("Predefined surveys require at least 2 options");
-        }
-
         PredefinedSurvey survey = new PredefinedSurvey();
-        survey.setTitle(surveyDTO.title());
-        survey.setDescription(surveyDTO.description());
-        survey.setAuthor(author);
         survey.setAllowMultipleAnswers(surveyDTO.allowMultipleAnswers());
         survey.setOptions(surveyDTO.options());
-
-        return surveyRepository.save(survey);
+        return survey;
     }
 
     public Page<PredefinedSurvey> getAllSurveys(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return surveyRepository.findAll(pageable);
+        return repository.findAll(pageable);
     }
 
     public PredefinedSurvey getSurveyById(UUID id) {
-        return surveyRepository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id));
     }
 
@@ -58,10 +68,10 @@ public class PredefinedSurveyService {
             throw new BadRequestException("You can only delete your own surveys");
         }
 
-        surveyRepository.delete(survey);
+        repository.delete(survey);
     }
 
-    public Object updateSurvey(UUID id, @Valid NewSurveyDTO surveyDTO, User currentUser) {
+    public PredefinedSurvey updateSurvey(UUID id, @Valid NewSurveyDTO surveyDTO, User currentUser) {
         PredefinedSurvey survey = getSurveyById(id);
 
         if (!survey.getAuthor().getId().equals(currentUser.getId())) {
@@ -73,7 +83,7 @@ public class PredefinedSurveyService {
         survey.setAllowMultipleAnswers(surveyDTO.allowMultipleAnswers());
         survey.setOptions(surveyDTO.options());
 
-        return surveyRepository.save(survey);
+        return repository.save(survey);
     }
 
     public PredefinedSurvey patchSurvey(UUID id, PartialSurveyUpdateDTO surveyDTO, User currentUser) {
@@ -99,6 +109,6 @@ public class PredefinedSurveyService {
             survey.setOptions(surveyDTO.options());
         }
 
-        return surveyRepository.save(survey);
+        return repository.save(survey);
     }
 }

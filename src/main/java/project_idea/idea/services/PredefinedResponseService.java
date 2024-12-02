@@ -11,6 +11,7 @@ import project_idea.idea.repositories.PredefinedResponseRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,13 @@ public class PredefinedResponseService {
     public PredefinedResponse submitResponse(UUID surveyId, PredefinedSurveyResponseDTO responseDTO, User currentUser) {
         PredefinedSurvey survey = surveyService.getSurveyById(surveyId);
         
-        if (responseRepository.findBySurveyAndUser(survey, currentUser).isPresent()) {
+        // Prevent users from responding to their own surveys
+        if (survey.getAuthor().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("You cannot respond to your own survey");
+        }
+
+        Optional<PredefinedResponse> existingResponse = responseRepository.findBySurveyAndUser(survey, currentUser);
+        if (existingResponse.isPresent()) {
             throw new BadRequestException("You have already responded to this survey");
         }
 
@@ -33,15 +40,18 @@ public class PredefinedResponseService {
             throw new BadRequestException("Invalid option selected");
         }
 
-        // Validate multiple answers
-        if (!survey.isAllowMultipleAnswers() && responseDTO.selectedOptions().size() > 1) {
-            throw new BadRequestException("This survey does not allow multiple answers");
+        if (!survey.isAllowMultipleAnswers()) {
+            if (responseDTO.selectedOptions().size() > 1) {
+                throw new BadRequestException("This survey does not allow multiple answers");
+            }
         }
 
         PredefinedResponse response = new PredefinedResponse();
         response.setSurvey(survey);
         response.setUser(currentUser);
         response.setSelectedOptions(responseDTO.selectedOptions());
+
+        survey.getResponses().add(response);
 
         return responseRepository.save(response);
     }

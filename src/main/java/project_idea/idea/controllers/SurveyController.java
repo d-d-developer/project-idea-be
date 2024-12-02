@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import project_idea.idea.entities.BaseSurvey;
 import project_idea.idea.entities.OpenEndedSurvey;
 import project_idea.idea.entities.PredefinedSurvey;
 import project_idea.idea.entities.User;
@@ -22,6 +23,8 @@ import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.services.OpenEndedSurveyService;
 import project_idea.idea.services.PredefinedSurveyService;
+import project_idea.idea.services.SurveyFactory;
+import project_idea.idea.services.BaseSurveyService;
 
 import java.util.UUID;
 
@@ -36,21 +39,19 @@ import java.util.UUID;
 })
 @SecurityRequirement(name = "bearerAuth")
 public class SurveyController {
-    @Autowired
-    private OpenEndedSurveyService openEndedSurveyService;
-    @Autowired
-    private PredefinedSurveyService predefinedSurveyService;
+    private final SurveyFactory surveyFactory;
+
+    public SurveyController(SurveyFactory surveyFactory) {
+        this.surveyFactory = surveyFactory;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new survey")
     public Object createSurvey(@RequestBody @Valid NewSurveyDTO surveyDTO, 
                               @AuthenticationPrincipal User currentUser) {
-        if (surveyDTO.isOpenEnded()) {
-            return openEndedSurveyService.createSurvey(surveyDTO, currentUser);
-        } else {
-            return predefinedSurveyService.createSurvey(surveyDTO, currentUser);
-        }
+        return ((BaseSurveyService<BaseSurvey>) surveyFactory.getServiceForSurvey(surveyDTO))
+                          .createSurvey(surveyDTO, currentUser);
     }
 
     @GetMapping
@@ -58,28 +59,24 @@ public class SurveyController {
         summary = "Get all surveys",
         description = "Retrieve a paginated list of all surveys",
         parameters = {
-            @Parameter(name = "openEnded", description = "Filter for open-ended surveys", example = "true"),
+            @Parameter(name = "surveyType", description = "Filter surveys by type (OPEN_ENDED, PREDEFINED, or ALL)", example = "ALL"),
             @Parameter(name = "page", description = "Page number (0-based)", example = "0"),
             @Parameter(name = "size", description = "Number of items per page", example = "10"),
             @Parameter(name = "sortBy", description = "Field to sort by", example = "createdAt")
         }
     )
     public Page<?> getAllSurveys(
-            @RequestParam(required = false) Boolean openEnded,
+            @RequestParam(defaultValue = "ALL") String surveyType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy) {
-        if (openEnded != null && openEnded) {
-            return openEndedSurveyService.getAllSurveys(page, size, sortBy);
-        } else {
-            return predefinedSurveyService.getAllSurveys(page, size, sortBy);
-        }
+        return surveyFactory.getAllSurveys(surveyType, page, size, sortBy);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get survey by ID")
     public Object getSurveyById(@PathVariable UUID id) {
-        return openEndedSurveyService.getSurveyById(id);
+        return surveyFactory.getServiceForSurvey(id).getSurveyById(id);
     }
 
     @PutMapping("/{id}")
@@ -87,11 +84,8 @@ public class SurveyController {
     public Object updateSurvey(@PathVariable UUID id, 
                               @RequestBody @Valid NewSurveyDTO surveyDTO,
                               @AuthenticationPrincipal User currentUser) {
-        if (surveyDTO.isOpenEnded()) {
-            return openEndedSurveyService.updateSurvey(id, surveyDTO, currentUser);
-        } else {
-            return predefinedSurveyService.updateSurvey(id, surveyDTO, currentUser);
-        }
+        return ((BaseSurveyService<BaseSurvey>) surveyFactory.getServiceForSurvey(surveyDTO))
+                          .updateSurvey(id, surveyDTO, currentUser);
     }
 
     @DeleteMapping("/{id}")
@@ -99,7 +93,7 @@ public class SurveyController {
     @Operation(summary = "Delete survey")
     public void deleteSurvey(@PathVariable UUID id, 
                             @AuthenticationPrincipal User currentUser) {
-        openEndedSurveyService.deleteSurvey(id, currentUser);
+        surveyFactory.getServiceForSurvey(id).deleteSurvey(id, currentUser);
     }
 
     @PatchMapping("/{id}")
@@ -107,10 +101,7 @@ public class SurveyController {
     public Object patchSurvey(@PathVariable UUID id, 
                              @RequestBody @Valid PartialSurveyUpdateDTO surveyDTO,
                              @AuthenticationPrincipal User currentUser) {
-        try {
-            return openEndedSurveyService.patchSurvey(id, surveyDTO, currentUser);
-        } catch (NotFoundException e) {
-            return predefinedSurveyService.patchSurvey(id, surveyDTO, currentUser);
-        }
+        return ((BaseSurveyService<BaseSurvey>) surveyFactory.getServiceForSurvey(id))
+                          .patchSurvey(id, surveyDTO, currentUser);
     }
 }
