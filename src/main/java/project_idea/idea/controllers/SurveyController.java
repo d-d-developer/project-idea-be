@@ -15,14 +15,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.BaseSurvey;
 import project_idea.idea.entities.OpenEndedSurvey;
-import project_idea.idea.entities.PredefinedSurvey;
+import project_idea.idea.entities.MultipleChoiceSurvey;
 import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.ErrorsResponseDTO;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.services.OpenEndedSurveyService;
-import project_idea.idea.services.PredefinedSurveyService;
+import project_idea.idea.services.MultipleChoiceSurveyService;
 import project_idea.idea.services.SurveyFactory;
 import project_idea.idea.services.BaseSurveyService;
 
@@ -48,7 +48,7 @@ public class SurveyController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new survey")
-    public Object createSurvey(@RequestBody @Valid NewSurveyDTO surveyDTO, 
+    public Object createSurvey(@RequestBody @Valid NewSurveyDTO surveyDTO,
                               @AuthenticationPrincipal User currentUser) {
         return ((BaseSurveyService<BaseSurvey>) surveyFactory.getServiceForSurvey(surveyDTO))
                           .createSurvey(surveyDTO, currentUser);
@@ -59,7 +59,7 @@ public class SurveyController {
         summary = "Get all surveys",
         description = "Retrieve a paginated list of all surveys",
         parameters = {
-            @Parameter(name = "surveyType", description = "Filter surveys by type (OPEN_ENDED, PREDEFINED, or ALL)", example = "ALL"),
+            @Parameter(name = "surveyType", description = "Filter surveys by type (OPEN_ENDED, MultipleChoice, or ALL)", example = "ALL"),
             @Parameter(name = "page", description = "Page number (0-based)", example = "0"),
             @Parameter(name = "size", description = "Number of items per page", example = "10"),
             @Parameter(name = "sortBy", description = "Field to sort by", example = "createdAt")
@@ -81,7 +81,7 @@ public class SurveyController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update survey")
-    public Object updateSurvey(@PathVariable UUID id, 
+    public Object updateSurvey(@PathVariable UUID id,
                               @RequestBody @Valid NewSurveyDTO surveyDTO,
                               @AuthenticationPrincipal User currentUser) {
         return ((BaseSurveyService<BaseSurvey>) surveyFactory.getServiceForSurvey(surveyDTO))
@@ -91,17 +91,33 @@ public class SurveyController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete survey")
-    public void deleteSurvey(@PathVariable UUID id, 
+    public void deleteSurvey(@PathVariable UUID id,
                             @AuthenticationPrincipal User currentUser) {
         surveyFactory.getServiceForSurvey(id).deleteSurvey(id, currentUser);
     }
 
     @PatchMapping("/{id}")
     @Operation(summary = "Partially update survey")
-    public Object patchSurvey(@PathVariable UUID id, 
+    public Object patchSurvey(@PathVariable UUID id,
                              @RequestBody @Valid PartialSurveyUpdateDTO surveyDTO,
                              @AuthenticationPrincipal User currentUser) {
         return ((BaseSurveyService<BaseSurvey>) surveyFactory.getServiceForSurvey(id))
                           .patchSurvey(id, surveyDTO, currentUser);
+    }
+
+    @GetMapping("/featured")
+    @Operation(
+        summary = "Get featured surveys",
+        description = "Retrieve a paginated list of featured surveys",
+        parameters = {
+            @Parameter(name = "page", description = "Page number (0-based)", example = "0"),
+            @Parameter(name = "size", description = "Number of items per page", example = "10"),
+            @Parameter(name = "sortBy", description = "Field to sort by", example = "createdAt")
+        }
+    )
+    public Page<?> getFeaturedSurveys(@RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "10") int size,
+                                     @RequestParam(defaultValue = "createdAt") String sortBy) {
+        return surveyFactory.getFeaturedSurveys(page, size, sortBy);
     }
 }

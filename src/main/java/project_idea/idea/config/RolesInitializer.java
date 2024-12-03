@@ -44,7 +44,7 @@ public class RolesInitializer implements CommandLineRunner {
                     "Admin",
                     "User",
                     "admin@example.com",
-                    "admin123"
+                    "password"
                 );
                 
                 User adminUser = usersService.save(adminDTO);
