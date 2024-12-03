@@ -2,10 +2,13 @@ package project_idea.idea.services;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import project_idea.idea.entities.BaseSurvey;
 import project_idea.idea.entities.OpenEndedSurvey;
-import project_idea.idea.entities.PredefinedSurvey;
+import project_idea.idea.entities.MultipleChoiceSurvey;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +18,16 @@ import project_idea.idea.exceptions.NotFoundException;
 @Component
 public class SurveyFactory {
     private final OpenEndedSurveyService openEndedSurveyService;
-    private final PredefinedSurveyService predefinedSurveyService;
+    private final MultipleChoiceSurveyService multipleChoiceSurveyService;
 
     public SurveyFactory(OpenEndedSurveyService openEndedSurveyService, 
-                        PredefinedSurveyService predefinedSurveyService) {
+                        MultipleChoiceSurveyService multipleChoiceSurveyService) {
         this.openEndedSurveyService = openEndedSurveyService;
-        this.predefinedSurveyService = predefinedSurveyService;
+        this.multipleChoiceSurveyService = multipleChoiceSurveyService;
     }
 
     public BaseSurveyService<?> getServiceForSurvey(NewSurveyDTO surveyDTO) {
-        return surveyDTO.isOpenEnded() ? openEndedSurveyService : predefinedSurveyService;
+        return surveyDTO.isOpenEnded() ? openEndedSurveyService : multipleChoiceSurveyService;
     }
 
     public BaseSurveyService<?> getServiceForSurvey(UUID surveyId) {
@@ -32,7 +35,7 @@ public class SurveyFactory {
             openEndedSurveyService.getSurveyById(surveyId);
             return openEndedSurveyService;
         } catch (NotFoundException e) {
-            return predefinedSurveyService;
+            return multipleChoiceSurveyService;
         }
     }
 
@@ -40,22 +43,22 @@ public class SurveyFactory {
         switch (surveyType.toUpperCase()) {
             case "OPEN_ENDED":
                 return convertToBaseSurveyPage(openEndedSurveyService.getAllSurveys(page, size, sortBy));
-            case "PREDEFINED":
-                return convertToBaseSurveyPage(predefinedSurveyService.getAllSurveys(page, size, sortBy));
+            case "MULTIPLECHOICE":
+                return convertToBaseSurveyPage(multipleChoiceSurveyService.getAllSurveys(page, size, sortBy));
             case "ALL":
             default:
                 Page<OpenEndedSurvey> openEndedPage = openEndedSurveyService.getAllSurveys(page, size, sortBy);
-                Page<PredefinedSurvey> predefinedPage = predefinedSurveyService.getAllSurveys(page, size, sortBy);
-                return combineSurveyPages(openEndedPage, predefinedPage);
+                Page<MultipleChoiceSurvey> multipleChoicePage = multipleChoiceSurveyService.getAllSurveys(page, size, sortBy);
+                return combineSurveyPages(openEndedPage, multipleChoicePage);
         }
     }
 
-    private Page<BaseSurvey> combineSurveyPages(Page<OpenEndedSurvey> openEndedPage, Page<PredefinedSurvey> predefinedPage) {
+    private Page<BaseSurvey> combineSurveyPages(Page<OpenEndedSurvey> openEndedPage, Page<MultipleChoiceSurvey> multipleChoicePage) {
         List<BaseSurvey> combinedContent = new ArrayList<>();
         combinedContent.addAll(openEndedPage.getContent());
-        combinedContent.addAll(predefinedPage.getContent());
+        combinedContent.addAll(multipleChoicePage.getContent());
 
-        int totalElements = (int) (openEndedPage.getTotalElements() + predefinedPage.getTotalElements());
+        int totalElements = (int) (openEndedPage.getTotalElements() + multipleChoicePage.getTotalElements());
         int pageSize = openEndedPage.getSize();
         int pageNumber = openEndedPage.getNumber();
 
@@ -75,5 +78,18 @@ public class SurveyFactory {
             page.getPageable(),
             page.getTotalElements()
         );
+    }
+
+    public Page<BaseSurvey> getFeaturedSurveys(int page, int size, String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        Page<OpenEndedSurvey> openEndedFeatured = openEndedSurveyService.repository.findByFeaturedTrue(pageable);
+        Page<MultipleChoiceSurvey> multipleChoiceFeatured = multipleChoiceSurveyService.repository.findByFeaturedTrue(pageable);
+        
+        return combineSurveyPages(openEndedFeatured, multipleChoiceFeatured);
+    }
+
+    private <T extends BaseSurvey> Page<T> getFeaturedSurveys(BaseSurveyService<T> service, int page, int size, String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return service.repository.findByFeaturedTrue(pageable);
     }
 }

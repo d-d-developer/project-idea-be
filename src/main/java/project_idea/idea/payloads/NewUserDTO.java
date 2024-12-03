@@ -3,6 +3,8 @@ package project_idea.idea.payloads;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import java.util.Set;
+import java.util.UUID;
 
 public record NewUserDTO(
 		@NotEmpty(message = "First name is a required field!")
@@ -16,6 +18,13 @@ public record NewUserDTO(
 		String email,
 		@NotEmpty(message = "Password is a required field!")
 		@Size(min = 4, message = "The password must be at least 4 characters!")
-		// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\]).{8,32}$")
-		String password) {
+		// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[]:;<>,.?/~_+-=|\\]).{8,32}$")
+		String password,
+		@Size(max = 1000, message = "Bio cannot exceed 1000 characters")
+		String bio,
+		Set<UUID> interests
+) {
+	public NewUserDTO(String admin, String user, String email, String password) {
+		this(admin, user, email, password, null, null);
+	}
 }

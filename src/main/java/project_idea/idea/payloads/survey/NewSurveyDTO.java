@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public record NewSurveyDTO(
     @NotEmpty(message = "Title is required")
@@ -13,6 +15,10 @@ public record NewSurveyDTO(
 
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     String description,
+
+    Set<UUID> categories,
+    
+    Boolean featured,
 
     boolean allowMultipleAnswers,
     

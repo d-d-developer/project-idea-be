@@ -30,7 +30,7 @@ public class OpenEndedSurveyService extends BaseSurveyService<OpenEndedSurvey> {
         }
         
         if (surveyDTO.options() != null && !surveyDTO.options().isEmpty()) {
-            throw new BadRequestException("Open-ended surveys cannot have predefined options");
+            throw new BadRequestException("Open-ended surveys cannot have MultipleChoice options");
         }
     }
 

@@ -31,6 +31,13 @@ public class User implements UserDetails {
 	private String password;
 	private String avatarURL;
 	
+	@Column(length = 1000)
+	private String bio;
+	
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_interests")
+	private Set<Category> interests = new HashSet<>();
+	
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "user_roles")
 	private Set<Role> roles = new HashSet<>();

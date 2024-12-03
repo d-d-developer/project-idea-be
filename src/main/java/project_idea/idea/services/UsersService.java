@@ -12,9 +12,11 @@ import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.NewUserDTO;
+import project_idea.idea.payloads.PartialUserUpdateDTO;
 import project_idea.idea.payloads.RoleCreateDTO;
 import project_idea.idea.repositories.UsersRepository;
 import project_idea.idea.services.RoleService;
+import project_idea.idea.services.CategoryService;
 import project_idea.idea.tools.MailgunSender;
 
 import java.util.UUID;
@@ -33,6 +35,9 @@ public class UsersService {
 
 	@Autowired
 	private RoleService roleService;
+	
+	@Autowired
+	private CategoryService categoryService;
 
 	public User save(NewUserDTO body) {
 		// Verifica se l'email è già in uso
@@ -44,6 +49,16 @@ public class UsersService {
 
 		User newUser = new User(body.name(), body.surname(), body.email(), bcrypt.encode(body.password()),
 				"https://ui-avatars.com/api/?name=" + body.name() + "+" + body.surname());
+
+		// Set bio if provided
+		if (body.bio() != null) {
+			newUser.setBio(body.bio());
+		}
+		
+		// Add interests if provided
+		if (body.interests() != null) {
+			body.interests().forEach(categoryId -> newUser.getInterests().add(categoryService.getCategoryById(categoryId)));
+		}
 
 		Role userRole = roleService.getRoleByName("USER");
 
@@ -83,6 +98,15 @@ public class UsersService {
 		found.setEmail(body.email());
 		found.setPassword(body.password());
 		found.setAvatarURL("https://ui-avatars.com/api/?name=" + body.name() + "+" + body.surname());
+		
+		// Update bio
+		found.setBio(body.bio());
+		
+		// Update interests
+		found.getInterests().clear();
+		if (body.interests() != null) {
+			body.interests().forEach(categoryId -> found.getInterests().add(categoryService.getCategoryById(categoryId)));
+		}
 
 		return this.usersRepository.save(found);
 	}
@@ -108,6 +132,42 @@ public class UsersService {
 		Role role = roleService.getRoleById(roleId);
 		user.getRoles().remove(role);
 		return usersRepository.save(user);
+	}
+
+	public User findByIdAndPatch(UUID userId, PartialUserUpdateDTO body) {
+		User found = this.findById(userId);
+
+		if (body.email() != null && !found.getEmail().equals(body.email())) {
+			this.usersRepository.findByEmail(body.email()).ifPresent(
+					user -> {
+						throw new BadRequestException("Email address " + body.email() + " is already in use!");
+					}
+			);
+			found.setEmail(body.email());
+		}
+
+		if (body.name() != null) {
+			found.setName(body.name());
+		}
+
+		if (body.surname() != null) {
+			found.setSurname(body.surname());
+		}
+
+		if (body.password() != null) {
+			found.setPassword(bcrypt.encode(body.password()));
+		}
+
+		if (body.bio() != null) {
+			found.setBio(body.bio());
+		}
+
+		if (body.interests() != null) {
+			found.getInterests().clear();
+			body.interests().forEach(categoryId -> found.getInterests().add(categoryService.getCategoryById(categoryId)));
+		}
+
+		return this.usersRepository.save(found);
 	}
 
 }
