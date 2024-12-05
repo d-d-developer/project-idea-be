@@ -1,6 +1,7 @@
 package project_idea.idea.exceptions;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -28,6 +29,12 @@ public class ExceptionsHandler {
 	@ResponseStatus(HttpStatus.FORBIDDEN) // 403
 	public ErrorsResponseDTO handleForbidden(AuthorizationDeniedException ex) {
 		return new ErrorsResponseDTO("Forbidden access", LocalDateTime.now());
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+	public ErrorsResponseDTO handleIllegalArgument(HttpMessageNotReadableException ex) {
+		return new ErrorsResponseDTO("Invalid UUID format provided", LocalDateTime.now());
 	}
 
 	@ExceptionHandler(NotFoundException.class)

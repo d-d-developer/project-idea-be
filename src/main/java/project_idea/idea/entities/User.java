@@ -27,6 +27,9 @@ public class User implements UserDetails {
 	private UUID id;
 	private String name;
 	private String surname;
+	
+	@Column(unique = true)
+	private String username;
 	private String email;
 	private String password;
 	private String avatarURL;
@@ -47,7 +50,7 @@ public class User implements UserDetails {
 		this.surname = surname;
 		this.email = email;
 		this.password = password;
-		this.avatarURL = avatarURL;
+		this.avatarURL = "https://ui-avatars.com/api/?name=" + this.name + "+" + this.surname;
 	}
 
 	@Override
@@ -59,6 +62,6 @@ public class User implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		return this.getEmail();
+		return this.username;
 	}
 }

@@ -43,8 +43,11 @@ public class RolesInitializer implements CommandLineRunner {
                 NewUserDTO adminDTO = new NewUserDTO(
                     "Admin",
                     "User",
+                    "john-117",
                     "admin@example.com",
-                    "password"
+                    "password",
+                    null,
+                    null
                 );
                 
                 User adminUser = usersService.save(adminDTO);
