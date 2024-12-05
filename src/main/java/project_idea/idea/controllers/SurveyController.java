@@ -21,11 +21,13 @@ import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.ErrorsResponseDTO;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
+import project_idea.idea.payloads.survey.SurveyWithStatsDTO;
 import project_idea.idea.services.OpenEndedSurveyService;
 import project_idea.idea.services.MultipleChoiceSurveyService;
 import project_idea.idea.services.SurveyFactory;
 import project_idea.idea.services.BaseSurveyService;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -69,14 +71,24 @@ public class SurveyController {
             @RequestParam(defaultValue = "ALL") String surveyType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy) {
-        return surveyFactory.getAllSurveys(surveyType, page, size, sortBy);
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @AuthenticationPrincipal User currentUser) {
+        boolean isAdmin = currentUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+        return surveyFactory.getAllSurveys(surveyType, page, size, sortBy, isAdmin);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get survey by ID")
     public Object getSurveyById(@PathVariable UUID id) {
-        return surveyFactory.getServiceForSurvey(id).getSurveyById(id);
+        BaseSurveyService<?> service = surveyFactory.getServiceForSurvey(id);
+        if (service instanceof MultipleChoiceSurveyService) {
+            MultipleChoiceSurvey survey = ((MultipleChoiceSurveyService) service).getSurveyById(id);
+            Map<String, Long> stats = ((MultipleChoiceSurveyService) service).getResponseStatistics(id);
+            long totalResponses = stats.values().stream().mapToLong(Long::longValue).sum();
+            return new SurveyWithStatsDTO(survey, stats, totalResponses);
+        }
+        return service.getSurveyById(id);
     }
 
     @PutMapping("/{id}")

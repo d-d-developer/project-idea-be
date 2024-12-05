@@ -14,6 +14,8 @@ import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.repositories.MultipleChoiceSurveyRepository;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -109,5 +111,22 @@ public class MultipleChoiceSurveyService extends BaseSurveyService<MultipleChoic
         }
 
         return repository.save(survey);
+    }
+
+    public Map<String, Long> getResponseStatistics(UUID surveyId) {
+        MultipleChoiceSurvey survey = getSurveyById(surveyId);
+        
+        // Create a map to store option counts
+        Map<String, Long> statistics = new HashMap<>();
+        
+        // Initialize all options with 0 count
+        survey.getOptions().forEach(option -> statistics.put(option, 0L));
+        
+        // Count responses for each option
+        survey.getResponses().forEach(response -> 
+            response.getSelectedOptions().forEach(option -> 
+                statistics.merge(option, 1L, Long::sum)));
+        
+        return statistics;
     }
 }

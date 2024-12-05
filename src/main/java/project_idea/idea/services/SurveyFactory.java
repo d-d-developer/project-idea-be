@@ -39,16 +39,16 @@ public class SurveyFactory {
         }
     }
 
-    public Page<BaseSurvey> getAllSurveys(String surveyType, int page, int size, String sortBy) {
+    public Page<BaseSurvey> getAllSurveys(String surveyType, int page, int size, String sortBy, boolean isAdmin) {
         switch (surveyType.toUpperCase()) {
             case "OPEN_ENDED":
-                return convertToBaseSurveyPage(openEndedSurveyService.getAllSurveys(page, size, sortBy));
+                return convertToBaseSurveyPage(openEndedSurveyService.getAllSurveys(page, size, sortBy, isAdmin));
             case "MULTIPLECHOICE":
-                return convertToBaseSurveyPage(multipleChoiceSurveyService.getAllSurveys(page, size, sortBy));
+                return convertToBaseSurveyPage(multipleChoiceSurveyService.getAllSurveys(page, size, sortBy, isAdmin));
             case "ALL":
             default:
-                Page<OpenEndedSurvey> openEndedPage = openEndedSurveyService.getAllSurveys(page, size, sortBy);
-                Page<MultipleChoiceSurvey> multipleChoicePage = multipleChoiceSurveyService.getAllSurveys(page, size, sortBy);
+                Page<OpenEndedSurvey> openEndedPage = openEndedSurveyService.getAllSurveys(page, size, sortBy, isAdmin);
+                Page<MultipleChoiceSurvey> multipleChoicePage = multipleChoiceSurveyService.getAllSurveys(page, size, sortBy, isAdmin);
                 return combineSurveyPages(openEndedPage, multipleChoicePage);
         }
     }

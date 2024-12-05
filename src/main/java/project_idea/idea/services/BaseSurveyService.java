@@ -71,9 +71,14 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
     }
 
     public Page<T> getAllSurveys(int page, int size, String sortBy) {
+        return getAllSurveys(page, size, sortBy, false);
+    }
+
+    public Page<T> getAllSurveys(int page, int size, String sortBy, boolean adminUser) {
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findAll(pageable);
+        return adminUser ? repository.findAll(pageable) 
+                        : repository.findByFeaturedTrue(pageable);
     }
 
     public T getSurveyById(UUID id) {
