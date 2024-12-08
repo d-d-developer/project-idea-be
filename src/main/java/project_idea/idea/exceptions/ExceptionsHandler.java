@@ -3,12 +3,17 @@ package project_idea.idea.exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import project_idea.idea.payloads.ErrorsResponseDTO;
+import project_idea.idea.payloads.ErrorsResponseWithErrorsListDTO;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class ExceptionsHandler {
@@ -22,25 +27,43 @@ public class ExceptionsHandler {
 	@ExceptionHandler(UnauthorizedException.class)
 	@ResponseStatus(HttpStatus.UNAUTHORIZED) // 401
 	public ErrorsResponseDTO handleUnauthorized(UnauthorizedException ex) {
-		return new ErrorsResponseDTO("Unauthorized access", LocalDateTime.now());
+		return new ErrorsResponseDTO("Unauthorized", LocalDateTime.now());
 	}
 
 	@ExceptionHandler(AuthorizationDeniedException.class)
 	@ResponseStatus(HttpStatus.FORBIDDEN) // 403
 	public ErrorsResponseDTO handleForbidden(AuthorizationDeniedException ex) {
-		return new ErrorsResponseDTO("Forbidden access", LocalDateTime.now());
+		return new ErrorsResponseDTO("Forbidden", LocalDateTime.now());
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST) // 400
 	public ErrorsResponseDTO handleIllegalArgument(HttpMessageNotReadableException ex) {
-		return new ErrorsResponseDTO("Invalid UUID format provided", LocalDateTime.now());
+		return new ErrorsResponseDTO(ex.getMessage(), LocalDateTime.now());
 	}
 
 	@ExceptionHandler(NotFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND) // 404
 	public ErrorsResponseDTO handleNotFound(NotFoundException ex) {
 		return new ErrorsResponseDTO(ex.getMessage(), LocalDateTime.now());
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+	public ErrorsResponseDTO handleIllegalArgument(IllegalArgumentException ex) {
+		return new ErrorsResponseDTO("Invalid argument: " + ex.getMessage(), LocalDateTime.now());
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+	public ErrorsResponseWithErrorsListDTO handleValidationExceptions(MethodArgumentNotValidException ex) {
+		Map<String, String> errors = new HashMap<>();
+		ex.getBindingResult().getAllErrors().forEach((error) -> {
+			String fieldName = ((FieldError) error).getField();
+			String errorMessage = error.getDefaultMessage();
+			errors.put(fieldName, errorMessage);
+		});
+		return new ErrorsResponseWithErrorsListDTO("Validation failed", LocalDateTime.now(), errors);
 	}
 
 	@ExceptionHandler(Exception.class)
