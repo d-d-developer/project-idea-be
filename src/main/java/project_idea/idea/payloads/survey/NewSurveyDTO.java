@@ -12,7 +12,7 @@ import java.util.UUID;
 public record NewSurveyDTO(
     @Schema(
         description = "Title of the survey",
-        example = "Customer Satisfaction Survey",
+        example = "I’m thinking of creating a cloud rental platform. Any ideas or suggestions?",
         minLength = 3,
         maxLength = 100,
         required = true
@@ -23,7 +23,7 @@ public record NewSurveyDTO(
 
     @Schema(
         description = "Detailed description of the survey",
-        example = "Help us improve our services by providing your feedback",
+        example = "Imagine renting a cloud to make it rain right over the house of someone who annoys you. Fun, right?",
         maxLength = 1000
     )
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")

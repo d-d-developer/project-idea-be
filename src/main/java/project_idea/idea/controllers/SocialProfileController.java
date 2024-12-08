@@ -22,6 +22,9 @@ import project_idea.idea.services.SocialProfileService;
 
 import java.util.UUID;
 import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.data.web.PagedResourcesAssembler;
 
 @RestController
 @RequestMapping("/social-profiles")
@@ -30,6 +33,9 @@ public class SocialProfileController {
     
     @Autowired
     private SocialProfileService socialProfileService;
+    
+    @Autowired
+    private PagedResourcesAssembler<SocialProfile> pagedResourcesAssembler;
 
     @GetMapping("/{username}")
     @Operation(summary = "Get user's public profile by username")
@@ -88,12 +94,12 @@ public class SocialProfileController {
             @Parameter(name = "sortBy", description = "Field to sort by", example = "username")
         }
     )
-    public Page<SocialProfile> getAllProfiles(
+    public PagedModel<EntityModel<SocialProfile>> getAllProfiles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "username") String sortBy
     ) {
-        return socialProfileService.getAllProfiles(page, size, sortBy);
+        return pagedResourcesAssembler.toModel(socialProfileService.getAllProfiles(page, size, sortBy));
     }
 
     @PatchMapping("/me")

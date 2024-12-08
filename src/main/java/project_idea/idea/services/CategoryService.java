@@ -19,6 +19,12 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    public Page<Category> getAllCategories(int page, int size, String sortBy) {
+        if (size > 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return categoryRepository.findAll(pageable);
+    }
+
     public Category createCategory(String name, String description) {
         if (categoryRepository.existsByName(name)) {
             throw new BadRequestException("Category with name " + name + " already exists");

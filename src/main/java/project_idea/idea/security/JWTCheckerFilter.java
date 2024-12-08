@@ -22,36 +22,42 @@ import java.util.UUID;
 @Component
 public class JWTCheckerFilter extends OncePerRequestFilter {
 
-	@Autowired
-	private JWT jwt;
-	@Autowired
-	private UsersService usersService;
+    private final JWT jwt;
+    private final UsersService usersService;
+    
+    public JWTCheckerFilter(JWT jwt, UsersService usersService) {
+        this.jwt = jwt;
+        this.usersService = usersService;
+    }
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-		String authHeader = request.getHeader("Authorization");
-		if (authHeader == null || !authHeader.startsWith("Bearer "))
-			throw new UnauthorizedException("Insert the token in the Authorization Header with the correct format!");
-		String accessToken = authHeader.substring(7);
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer "))
+            throw new UnauthorizedException("Insert the token in the Authorization Header with the correct format!");
+        String accessToken = authHeader.substring(7);
 
-		jwt.verifyToken(accessToken);
+        jwt.verifyToken(accessToken);
 
-		String userId = jwt.getIdFromToken(accessToken);
-		User currentUser = this.usersService.findById(UUID.fromString(userId));
+        String userId = jwt.getIdFromToken(accessToken);
+        User currentUser = this.usersService.findById(UUID.fromString(userId));
 
-		Authentication authentication = new UsernamePasswordAuthenticationToken(currentUser, null, currentUser.getAuthorities());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(currentUser, null, currentUser.getAuthorities());
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response);
 
-	}
+    }
 
-	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) {
-		return new AntPathMatcher().match("/auth/**", request.getServletPath()) ||
-				new AntPathMatcher().match("/v3/api-docs/**", request.getServletPath()) ||
-				new AntPathMatcher().match("/swagger-ui/**", request.getServletPath());
-	}
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return new AntPathMatcher().match("/auth/**", request.getServletPath()) ||
+                new AntPathMatcher().match("/categories", request.getServletPath()) ||
+                new AntPathMatcher().match("/social-profiles", request.getServletPath()) ||
+                new AntPathMatcher().match("/social-profiles/*", request.getServletPath()) ||
+                new AntPathMatcher().match("/v3/api-docs/**", request.getServletPath()) ||
+                new AntPathMatcher().match("/swagger-ui/**", request.getServletPath());
+    }
 }

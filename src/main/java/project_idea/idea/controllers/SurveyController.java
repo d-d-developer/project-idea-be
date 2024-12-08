@@ -131,9 +131,9 @@ public class SurveyController {
             @Parameter(name = "sortBy", description = "Field to sort by", example = "createdAt")
         }
     )
-    public Page<?> getFeaturedSurveys(@RequestParam(defaultValue = "0") int page,
+    public PagedModel<EntityModel<BaseSurvey>> getFeaturedSurveys(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "10") int size,
                                      @RequestParam(defaultValue = "createdAt") String sortBy) {
-        return surveyFactory.getFeaturedSurveys(page, size, sortBy);
+        return pagedResourcesAssembler.toModel(surveyFactory.getFeaturedSurveys(page, size, sortBy));
     }
 }

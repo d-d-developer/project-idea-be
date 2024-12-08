@@ -10,24 +10,35 @@ import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.Category;
 import project_idea.idea.payloads.CategoryCreateDTO;
 import project_idea.idea.services.CategoryService;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.data.web.PagedResourcesAssembler;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/categories")
 @Tag(name = "Categories", description = "APIs for category management")
-@SecurityRequirement(name = "bearerAuth")
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
+    
+    @Autowired
+    private PagedResourcesAssembler<Category> pagedResourcesAssembler;
 
     @GetMapping
-    public List<Category> getAllCategories() {
-        return categoryService.getAllCategories();
+    public PagedModel<EntityModel<Category>> getAllCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy
+    ) {
+        Page<Category> categoryPage = categoryService.getAllCategories(page, size, sortBy);
+        return pagedResourcesAssembler.toModel(categoryPage);
     }
 
     @PostMapping
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public Category createCategory(@RequestBody CategoryCreateDTO categoryDTO) {
@@ -35,12 +46,14 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN')")
     public Category updateCategory(@PathVariable UUID id, @RequestBody CategoryCreateDTO categoryDTO) {
         return categoryService.updateCategory(id, categoryDTO.name(), categoryDTO.description());
     }
 
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable UUID id) {
