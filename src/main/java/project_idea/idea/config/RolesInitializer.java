@@ -45,8 +45,7 @@ public class RolesInitializer implements CommandLineRunner {
                     "User",
                     "john-117",
                     "admin@example.com",
-                    "password",
-                    null,
+                    "password123",
                     null
                 );
                 

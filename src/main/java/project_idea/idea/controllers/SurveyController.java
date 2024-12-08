@@ -6,9 +6,10 @@ import io.swagger.v3.oas.annotations.responses.*;
 import io.swagger.v3.oas.annotations.security.*;
 import io.swagger.v3.oas.annotations.tags.*;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,6 +44,9 @@ import java.util.UUID;
 public class SurveyController {
     private final SurveyFactory surveyFactory;
 
+    @Autowired
+    private PagedResourcesAssembler<BaseSurvey> pagedResourcesAssembler;
+
     public SurveyController(SurveyFactory surveyFactory) {
         this.surveyFactory = surveyFactory;
     }
@@ -67,15 +71,15 @@ public class SurveyController {
             @Parameter(name = "sortBy", description = "Field to sort by", example = "createdAt")
         }
     )
-    public Page<?> getAllSurveys(
+    public PagedModel<EntityModel<BaseSurvey>> getAllSurveys(
             @RequestParam(defaultValue = "ALL") String surveyType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @AuthenticationPrincipal User currentUser) {
-        boolean isAdmin = currentUser.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
-        return surveyFactory.getAllSurveys(surveyType, page, size, sortBy, isAdmin);
+        Page<BaseSurvey> surveyPage = surveyFactory.getAllSurveys(surveyType, page, size, sortBy, 
+            currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")));
+        return pagedResourcesAssembler.toModel(surveyPage);
     }
 
     @GetMapping("/{id}")

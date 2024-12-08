@@ -14,19 +14,19 @@ public class UsernameSuggestionService {
         this.faker = new Faker();
     }
 
-    public String generateUsername(String email) {
-        String baseUsername = email.split("@")[0]
+    public String generateUsername(/*String email*/) {
+        /*String baseUsername = email.split("@")[0]
                 .replaceAll("[^a-zA-Z0-9]", "")
                 .toLowerCase();
 
-        if (!usersRepository.findByUsername(baseUsername).isPresent()) {
+        if (!usersRepository.findBySocialProfile_Username(baseUsername).isPresent()) {
             return baseUsername;
-        }
+        }*/
 
         String username;
         do {
             username = faker.name().username() + faker.number().numberBetween(100, 999);
-        } while (usersRepository.findByUsername(username).isPresent());
+        } while (usersRepository.findBySocialProfile_Username(username).isPresent());
 
         return username;
     }

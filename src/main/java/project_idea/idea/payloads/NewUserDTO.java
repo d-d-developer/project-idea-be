@@ -16,9 +16,9 @@ public record NewUserDTO(
         maxLength = 40,
         required = true
     )
-    @NotEmpty(message = "First name is a required field!")
-    @Size(min = 2, max = 40, message = "The first name must be between 2 and 40 characters!")
-    String name,
+    @NotEmpty(message = "firstName is a required field!")
+    @Size(min = 2, max = 40, message = "The firstName must be between 2 and 40 characters!")
+    String firstName,
     
     @Schema(
         description = "User's last name",
@@ -27,9 +27,9 @@ public record NewUserDTO(
         maxLength = 40,
         required = true
     )
-    @NotEmpty(message = "Last name is a required field!")
-    @Size(min = 2, max = 40, message = "The last name must be between 2 and 40 characters!")
-    String surname,
+    @NotEmpty(message = "lastName is a required field!")
+    @Size(min = 2, max = 40, message = "The lastName must be between 2 and 40 characters!")
+    String lastName,
     
     @Schema(
         description = "Unique username for the account. If not provided, will be auto-generated",
@@ -54,7 +54,7 @@ public record NewUserDTO(
     
     @Schema(
         description = "User's password. Will be encrypted before storage",
-        example = "strongPassword123",
+        example = "password123",
         minLength = 4,
         required = true,
         format = "password"
@@ -62,14 +62,6 @@ public record NewUserDTO(
     @NotEmpty(message = "Password is a required field!")
     @Size(min = 4, message = "The password must be at least 4 characters!")
     String password,
-    
-    @Schema(
-        description = "User's bio or description. Optional",
-        example = "Software developer passionate about creating user-friendly applications",
-        maxLength = 1000
-    )
-    @Size(max = 1000, message = "Bio cannot exceed 1000 characters")
-    String bio,
     
     @Schema(
         description = "Set of category IDs representing user's interests",

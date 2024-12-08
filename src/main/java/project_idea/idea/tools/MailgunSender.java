@@ -24,7 +24,7 @@ public class MailgunSender {
 				.queryString("from", "dev@dev.com")
 				.queryString("to", recipient.getEmail())
 				.queryString("subject", "Registration completed!")
-				.queryString("text", "Welcome " + recipient.getName() + " to our platform!")
+				.queryString("text", "Welcome " + recipient.getSocialProfile().getFirstName() + " to our platform!")
 				.asJson();
 	}
 }

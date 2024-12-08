@@ -14,7 +14,7 @@ public record PartialUserUpdateDTO(
         minLength = 2,
         maxLength = 40
     )
-    String name,
+    String firstName,
 
     @Schema(
         description = "User's last name",
@@ -22,8 +22,8 @@ public record PartialUserUpdateDTO(
         minLength = 2,
         maxLength = 40
     )
-    @Size(min = 2, max = 40, message = "The last name must be between 2 and 40 characters!")
-    String surname,
+    @Size(min = 2, max = 40, message = "The lastName must be between 2 and 40 characters!")
+    String lastName,
 
     @Schema(
         description = "Unique username for the account",
@@ -49,14 +49,6 @@ public record PartialUserUpdateDTO(
     )
     @Size(min = 4, message = "The password must be at least 4 characters!")
     String password,
-
-    @Schema(
-        description = "User's bio or description",
-        example = "Software developer passionate about creating user-friendly applications",
-        maxLength = 1000
-    )
-    @Size(max = 1000, message = "Bio cannot exceed 1000 characters")
-    String bio,
 
     @Schema(
         description = "Set of category IDs representing user's interests",

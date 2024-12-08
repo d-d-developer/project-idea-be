@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,47 +22,43 @@ import java.util.UUID;
 @NoArgsConstructor
 @JsonIgnoreProperties({"password", "accountNonLocked", "credentialsNonExpired", "accountNonExpired", "authorities", "enabled"})
 public class User implements UserDetails {
-	@Id
-	@GeneratedValue
-	@Setter(AccessLevel.NONE)
-	private UUID id;
-	private String name;
-	private String surname;
-	
-	@Column(unique = true)
-	private String username;
-	private String email;
-	private String password;
-	private String avatarURL;
-	
-	@Column(length = 1000)
-	private String bio;
-	
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_interests")
-	private Set<Category> interests = new HashSet<>();
-	
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_roles")
-	private Set<Role> roles = new HashSet<>();
+    @Id
+    @GeneratedValue
+    @Setter(AccessLevel.NONE)
+    private UUID id;
+    private String email;
+    private String password;
 
-	public User(String name, String surname, String email, String password, String avatarURL) {
-		this.name = name;
-		this.surname = surname;
-		this.email = email;
-		this.password = password;
-		this.avatarURL = "https://ui-avatars.com/api/?name=" + this.name + "+" + this.surname;
-	}
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private SocialProfile socialProfile;
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return roles.stream()
-			.map(role -> new SimpleGrantedAuthority(role.getName()))
-			.toList();
-	}
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_interests")
+    private Set<Category> interests = new HashSet<>();
 
-	@Override
-	public String getUsername() {
-		return this.username;
-	}
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles")
+    private Set<Role> roles = new HashSet<>();
+
+    public User(String email, String password) {
+        this.email = email;
+        this.password = password;
+        this.socialProfile = new SocialProfile();
+        this.socialProfile.setUser(this);
+        this.socialProfile.setBio("");
+        this.socialProfile.setHasCustomAvatar(false);
+        this.socialProfile.setLinks(new HashMap<>());
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+            .map(role -> new SimpleGrantedAuthority(role.getName()))
+            .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        return this.socialProfile != null ? this.socialProfile.getUsername() : null;
+    }
 }

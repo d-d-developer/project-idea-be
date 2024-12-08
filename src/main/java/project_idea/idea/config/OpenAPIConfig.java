@@ -8,13 +8,14 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 
 @Configuration
 public class OpenAPIConfig {
+    private static final String SECURITY_SCHEME_NAME = "bearerAuth";
+
     @Bean
     public OpenAPI myOpenAPI() {
-        final String securitySchemeName = "bearerAuth";
-        
         return new OpenAPI()
                 .info(new Info()
                         .title("Project Idea API")
@@ -24,12 +25,23 @@ public class OpenAPIConfig {
                                 .name("Project Idea Team")
                                 .email("support@mail.com")))
                 .addSecurityItem(new SecurityRequirement()
-                        .addList(securitySchemeName))
+                        .addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
-                        .addSecuritySchemes(securitySchemeName, new SecurityScheme()
-                                .name(securitySchemeName)
+                        .addSecuritySchemes(SECURITY_SCHEME_NAME, new SecurityScheme()
+                                .name(SECURITY_SCHEME_NAME)
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
-                                .bearerFormat("JSON Web Token")));
+                                .bearerFormat("JWT")));
+    }
+
+    private Object createSwaggerUIConfig() {
+        return new SwaggerUIConfig();
+    }
+
+    private static class SwaggerUIConfig {
+        public final String persistAuthorization = "true";
+        public final String tryItOutEnabled = "true";
+        public final String filter = "true";
+        public final String syntaxHighlight = "true";
     }
 }
