@@ -27,13 +27,13 @@ public class ExceptionsHandler {
 	@ExceptionHandler(UnauthorizedException.class)
 	@ResponseStatus(HttpStatus.UNAUTHORIZED) // 401
 	public ErrorsResponseDTO handleUnauthorized(UnauthorizedException ex) {
-		return new ErrorsResponseDTO("Unauthorized", LocalDateTime.now());
+		return new ErrorsResponseDTO("Unauthorized: " + ex.getMessage(), LocalDateTime.now());
 	}
 
 	@ExceptionHandler(AuthorizationDeniedException.class)
 	@ResponseStatus(HttpStatus.FORBIDDEN) // 403
 	public ErrorsResponseDTO handleForbidden(AuthorizationDeniedException ex) {
-		return new ErrorsResponseDTO("Forbidden", LocalDateTime.now());
+		return new ErrorsResponseDTO("Forbidden: " + ex.getMessage(), LocalDateTime.now());
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
