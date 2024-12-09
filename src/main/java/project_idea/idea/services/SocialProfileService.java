@@ -3,6 +3,7 @@ package project_idea.idea.services;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,6 +37,7 @@ public class SocialProfileService {
     private Cloudinary cloudinaryUploader;
 
     @JsonIgnore
+    @Transactional(readOnly = true)
     public SocialProfile getSocialProfileByUserId(UUID userId) {
         User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));

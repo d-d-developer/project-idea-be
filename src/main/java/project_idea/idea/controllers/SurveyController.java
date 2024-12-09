@@ -11,6 +11,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -68,7 +69,8 @@ public class SurveyController {
             @Parameter(name = "surveyType", description = "Filter surveys by type (OPEN_ENDED, MultipleChoice, or ALL)", example = "ALL"),
             @Parameter(name = "page", description = "Page number (0-based)", example = "0"),
             @Parameter(name = "size", description = "Number of items per page", example = "10"),
-            @Parameter(name = "sortBy", description = "Field to sort by", example = "createdAt")
+            @Parameter(name = "sortBy", description = "Field to sort by", example = "createdAt"),
+            @Parameter(name = "language", description = "Filter surveys by language code", example = "en")
         }
     )
     public PagedModel<EntityModel<BaseSurvey>> getAllSurveys(
@@ -76,9 +78,17 @@ public class SurveyController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(required = false) String language,
             @AuthenticationPrincipal User currentUser) {
-        Page<BaseSurvey> surveyPage = surveyFactory.getAllSurveys(surveyType, page, size, sortBy, 
-            currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")));
+        boolean isAdmin = currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
+        
+        Page<BaseSurvey> surveyPage;
+        if (language != null) {
+            surveyPage = surveyFactory.getAllSurveysByLanguage(surveyType, language, page, size, sortBy, isAdmin);
+        } else {
+            surveyPage = surveyFactory.getAllSurveys(surveyType, page, size, sortBy, isAdmin);
+        }
+        
         return pagedResourcesAssembler.toModel(surveyPage);
     }
 

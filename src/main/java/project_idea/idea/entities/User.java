@@ -1,6 +1,7 @@
 package project_idea.idea.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,6 +29,9 @@ public class User implements UserDetails {
     private UUID id;
     private String email;
     private String password;
+    
+    @Column(nullable = false)
+    private String preferredLanguage = "en";
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private SocialProfile socialProfile;
@@ -38,6 +42,7 @@ public class User implements UserDetails {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles")
+    @JsonIgnore
     private Set<Role> roles = new HashSet<>();
 
     public User(String email, String password) {
@@ -48,6 +53,7 @@ public class User implements UserDetails {
         this.socialProfile.setBio("");
         this.socialProfile.setHasCustomAvatar(false);
         this.socialProfile.setLinks(new HashMap<>());
+        this.preferredLanguage = "en";
     }
 
     @Override

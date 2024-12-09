@@ -26,6 +26,9 @@ public abstract class Post {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false)
+    private String language;
+
     @Column(length = 1000)
     private String description;
 
@@ -47,4 +50,11 @@ public abstract class Post {
     private LocalDateTime updatedAt;
 
     private boolean active = true;
+    
+    @PrePersist
+    protected void onCreate() {
+        if (language == null && author != null) {
+            language = author.getPreferredLanguage();
+        }
+    }
 }

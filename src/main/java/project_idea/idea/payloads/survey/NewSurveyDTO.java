@@ -57,7 +57,7 @@ public record NewSurveyDTO(
     
     @Schema(
         description = "List of options for multiple choice surveys",
-        example = "[\"Very Satisfied\", \"Satisfied\", \"Neutral\", \"Dissatisfied\"]")
+        example = "[\"Option A\", \"Option B\", \"Option C\", \"Option D\"]")
     @Size(min = 2, message = "At least 2 options are required for multiple choice surveys")
     List<String> options
 ) {}

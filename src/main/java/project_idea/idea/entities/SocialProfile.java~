@@ -36,7 +36,7 @@ public class SocialProfile {
     @Column(length = 1000)
     private String bio;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @CollectionTable(name = "social_profile_links", joinColumns = @JoinColumn(name = "social_profile_id"))
     @MapKeyColumn(name = "platform")
     @Column(name = "url")

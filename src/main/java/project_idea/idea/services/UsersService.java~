@@ -54,10 +54,6 @@ public class UsersService {
         newUser.getSocialProfile().setLastName(body.lastName());
         newUser.getSocialProfile().updateAvatarUrl();
 
-        if (body.preferredLanguage() != null) {
-            newUser.setPreferredLanguage(body.preferredLanguage());
-        }
-
         // Set username for social profile
         if (body.username() != null) {
             // Check if username is already taken
@@ -115,10 +111,6 @@ public class UsersService {
         found.setPassword(body.password());
         found.getSocialProfile().updateAvatarUrl();
 
-        if (body.preferredLanguage() != null) {
-            found.setPreferredLanguage(body.preferredLanguage());
-        }
-
         if (body.interests() != null) {
             found.getInterests().clear();
             body.interests().forEach(categoryId -> found.getInterests().add(categoryService.getCategoryById(categoryId)));
@@ -160,10 +152,6 @@ public class UsersService {
                     }
             );
             found.setEmail(body.email());
-        }
-
-        if (body.preferredLanguage() != null) {
-            found.setPreferredLanguage(body.preferredLanguage());
         }
 
         if (body.firstName() != null) {

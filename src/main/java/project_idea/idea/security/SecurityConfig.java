@@ -41,7 +41,8 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(auth -> auth
             .requestMatchers("/categories").permitAll()
             .requestMatchers("/social-profiles").permitAll()
-            .requestMatchers("/social-profiles/*").permitAll()
+            .requestMatchers("/social-profiles/*/public").permitAll() 
+            .requestMatchers("/social-profiles/me/**").authenticated()
             .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
             .anyRequest().authenticated()

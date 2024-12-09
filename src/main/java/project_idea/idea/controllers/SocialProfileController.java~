@@ -9,8 +9,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +23,6 @@ import project_idea.idea.payloads.SocialProfileUpdateDTO;
 import project_idea.idea.services.SocialProfileService;
 
 import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -35,9 +32,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 @RequestMapping("/social-profiles")
 @Tag(name = "Social Profiles", description = "APIs for managing user social profiles")
 public class SocialProfileController {
-
-    private static final Logger logger = LoggerFactory.getLogger(SocialProfileController.class);
-
+    
     @Autowired
     private SocialProfileService socialProfileService;
     

@@ -64,6 +64,14 @@ public record NewUserDTO(
     String password,
     
     @Schema(
+        description = "User's preferred language (ISO 639-1 code)",
+        example = "en",
+        pattern = "^[a-z]{2}$"
+    )
+    @Pattern(regexp = "^[a-z]{2}$", message = "Language must be a valid ISO 639-1 code")
+    String preferredLanguage,
+    
+    @Schema(
         description = "Set of category IDs representing user's interests",
         example = "[\"550e8400-e29b-41d4-a716-446655440000\"]"
     )

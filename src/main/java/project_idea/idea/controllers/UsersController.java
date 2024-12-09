@@ -1,5 +1,6 @@
 package project_idea.idea.controllers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.media.*;
 import io.swagger.v3.oas.annotations.responses.*;
@@ -17,6 +18,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.User;
+import com.fasterxml.jackson.annotation.JsonView;
+
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.payloads.ErrorsResponseDTO;
 import project_idea.idea.payloads.PartialUserUpdateDTO;
@@ -36,13 +39,31 @@ public class UsersController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public PagedModel<EntityModel<User>> findAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-                              @RequestParam(defaultValue = "id") String sortBy) {
+    @Operation(
+            summary = "Get all users",
+            description = "Retrieves a paged list of all users. Requires ADMIN authority.",
+            tags = {"User"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful retrieval of users",
+                            content = @Content(mediaType = "application/hal+json",
+                                    schema = @Schema(implementation = PagedModel.class))
+                    ),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Requires ADMIN authority")
+            }
+    )
+    public PagedModel<EntityModel<User>> findAll(
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Field to sort by") @RequestParam(defaultValue = "id") String sortBy
+    ) {
         Page<User> userPage = this.usersService.findAll(page, size, sortBy);
         return pagedResourcesAssembler.toModel(userPage);
     }
 
     @GetMapping("/me")
+    @JsonIgnore(false)
     @Operation(
         summary = "Get current user",
         description = "Retrieve the information of the currently authenticated user",
@@ -99,6 +120,7 @@ public class UsersController {
 
     @GetMapping("/{userId}")
     @SecurityRequirement(name = "bearerAuth")
+    @JsonIgnore(false)
     @PreAuthorize("hasAuthority('ADMIN') or #userId == authentication.principal.id")
     @Operation(
         summary = "Get user by ID",

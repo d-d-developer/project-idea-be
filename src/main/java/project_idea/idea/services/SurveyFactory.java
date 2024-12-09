@@ -53,6 +53,25 @@ public class SurveyFactory {
         }
     }
 
+    public Page<BaseSurvey> getAllSurveysByLanguage(String surveyType, String language, int page, int size, 
+                                                   String sortBy, boolean isAdmin) {
+        switch (surveyType.toUpperCase()) {
+            case "OPEN_ENDED":
+                return convertToBaseSurveyPage(
+                    openEndedSurveyService.getAllSurveysByLanguage(language, page, size, sortBy, isAdmin));
+            case "MULTIPLECHOICE":
+                return convertToBaseSurveyPage(
+                    multipleChoiceSurveyService.getAllSurveysByLanguage(language, page, size, sortBy, isAdmin));
+            case "ALL":
+            default:
+                Page<OpenEndedSurvey> openEndedPage = 
+                    openEndedSurveyService.getAllSurveysByLanguage(language, page, size, sortBy, isAdmin);
+                Page<MultipleChoiceSurvey> multipleChoicePage = 
+                    multipleChoiceSurveyService.getAllSurveysByLanguage(language, page, size, sortBy, isAdmin);
+                return combineSurveyPages(openEndedPage, multipleChoicePage);
+        }
+    }
+
     private Page<BaseSurvey> combineSurveyPages(Page<OpenEndedSurvey> openEndedPage, Page<MultipleChoiceSurvey> multipleChoicePage) {
         List<BaseSurvey> combinedContent = new ArrayList<>();
         combinedContent.addAll(openEndedPage.getContent());

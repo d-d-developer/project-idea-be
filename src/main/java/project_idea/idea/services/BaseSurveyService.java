@@ -14,6 +14,7 @@ import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.repositories.PostRepository;
 import project_idea.idea.services.CategoryService;
+import project_idea.idea.utils.LanguageUtils;
 
 import java.util.UUID;
 
@@ -117,6 +118,26 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
         }
         
         return repository.save(survey);
+    }
+
+    public Page<T> getAllSurveysByLanguage(String language, int page, int size, String sortBy, boolean adminUser) {
+        if (!LanguageUtils.isValidLanguageCode(language)) {
+            throw new IllegalArgumentException("Invalid language code: " + language);
+        }
+        
+        if (size > 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        
+        if (adminUser) {
+            return repository.findByLanguage(language.toLowerCase(), pageable);
+        } else {
+            return repository.findByLanguageAndFeaturedTrue(language.toLowerCase(), pageable);
+        }
+    }
+
+    public T getSurveyByIdAndLanguage(UUID id, String language) {
+        return repository.findByIdAndLanguage(id, LanguageUtils.normalizeLanguageCode(language))
+                .orElseThrow(() -> new NotFoundException(id));
     }
 
     protected void validateOwnership(T survey, User currentUser) {
