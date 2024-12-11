@@ -8,11 +8,12 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import project_idea.idea.enums.UserStatus;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,6 +35,20 @@ public class User implements UserDetails {
     @JsonIgnore
     private String password;
     
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.ACTIVE;
+    
+    @Column
+    private LocalDateTime suspensionEndDate;
+    
+    @Column
+    private LocalDateTime lastModeratedAt;
+    
+    @Column(length = 500)
+    private String moderationReason;
+    
+    private boolean hasWarnings = false;
+
     @Column(nullable = false)
     private String preferredLanguage = "en";
 

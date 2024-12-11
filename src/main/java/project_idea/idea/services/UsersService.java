@@ -30,8 +30,6 @@ public class UsersService {
     
     @Autowired
     private PasswordEncoder bcrypt;
-    
-    // other autowired dependencies
 
     @Autowired
     private RoleService roleService;
@@ -42,6 +40,15 @@ public class UsersService {
     @Autowired
     private UsernameSuggestionService usernameSuggestionService;
 
+    @Transactional
+    public User save(User user) {
+        if (user == null) {
+            throw new BadRequestException("User cannot be null");
+        }
+        return this.usersRepository.save(user);
+    }
+
+    @Transactional
     public User save(NewUserDTO body) {
         this.usersRepository.findByEmail(body.email()).ifPresent(
                 user -> {

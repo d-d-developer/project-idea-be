@@ -43,6 +43,7 @@ public class SecurityConfig {
             .requestMatchers("/categories").permitAll()
             .requestMatchers("/social-profiles").permitAll()
             .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
+            .requestMatchers("/moderation/**").hasAuthority("ADMIN")
             .requestMatchers("/social-profiles/*/public").permitAll() 
             .requestMatchers("/social-profiles/me/**").authenticated()
             .requestMatchers("/posts/me/**").authenticated()

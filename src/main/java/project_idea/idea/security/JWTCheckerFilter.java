@@ -14,11 +14,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import project_idea.idea.entities.User;
+import project_idea.idea.enums.UserStatus;
 import project_idea.idea.exceptions.UnauthorizedException;
 import project_idea.idea.services.UsersService;
 import project_idea.idea.tools.JWT;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
@@ -53,8 +55,31 @@ public class JWTCheckerFilter extends OncePerRequestFilter {
             jwt.verifyToken(accessToken);
             String userId = jwt.getIdFromToken(accessToken);
             User currentUser = this.usersService.findById(UUID.fromString(userId));
-            logger.debug("User authenticated successfully: {}", currentUser.getEmail());
 
+            // Check if user is banned
+            if (currentUser.getStatus() == UserStatus.BANNED) {
+                logger.error("Banned user attempted to access: {}", currentUser.getEmail());
+                throw new UnauthorizedException("Your account has been banned. Reason: " + 
+                    currentUser.getModerationReason());
+            }
+
+            // Check if user is suspended
+            if (currentUser.getStatus() == UserStatus.SUSPENDED) {
+                if (currentUser.getSuspensionEndDate().isAfter(LocalDateTime.now())) {
+                    logger.error("Suspended user attempted to access: {}", currentUser.getEmail());
+                    throw new UnauthorizedException("Your account is suspended until " + 
+                        currentUser.getSuspensionEndDate() + ". Reason: " + 
+                        currentUser.getModerationReason());
+                } else {
+                    // If suspension period is over, automatically reactivate the account
+                    currentUser.setStatus(UserStatus.ACTIVE);
+                    currentUser.setSuspensionEndDate(null);
+                    currentUser.setModerationReason(null);
+                    usersService.save(currentUser);
+                }
+            }
+
+            logger.debug("User authenticated successfully: {}", currentUser.getEmail());
             Authentication authentication = new UsernamePasswordAuthenticationToken(currentUser, null, currentUser.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {

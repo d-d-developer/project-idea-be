@@ -15,5 +15,4 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public abstract class BaseSurvey extends Post {
-    private boolean active = true;
 }

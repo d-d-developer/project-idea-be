@@ -7,14 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import project_idea.idea.entities.Post;
-import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.entities.User;
-import project_idea.idea.exceptions.BadRequestException;
+import project_idea.idea.enums.PostStatus;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.repositories.PostRepository;
-import project_idea.idea.utils.LanguageUtils;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 @Service
@@ -50,7 +47,7 @@ public class PostService {
         }
         
         // If not authenticated, show only featured posts
-        return postRepository.findByFeaturedTrue(pageable);
+        return postRepository.findByStatus(PostStatus.ACTIVE, pageable);
     }
 
     public Page<Post> getMyPosts(User currentUser, int page, int size, String sortBy) {

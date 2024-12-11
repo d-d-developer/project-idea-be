@@ -14,6 +14,7 @@ import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.repositories.OpenEndedSurveyRepository;
+import project_idea.idea.enums.PostStatus;
 
 import java.util.UUID;
 
@@ -43,8 +44,9 @@ public class OpenEndedSurveyService extends BaseSurveyService<OpenEndedSurvey> {
     }
 
     public Page<OpenEndedSurvey> getAllSurveys(int page, int size, String sortBy) {
+        if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findAll(pageable);
+        return repository.findByStatus(PostStatus.ACTIVE, pageable);
     }
 
     public OpenEndedSurvey getSurveyById(UUID id) {
@@ -82,9 +84,6 @@ public class OpenEndedSurveyService extends BaseSurveyService<OpenEndedSurvey> {
         }
         if (surveyDTO.description() != null) {
             survey.setDescription(surveyDTO.description());
-        }
-        if (surveyDTO.active() != null) {
-            survey.setActive(surveyDTO.active());
         }
 
         return repository.save(survey);

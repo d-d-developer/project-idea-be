@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import project_idea.idea.enums.PostStatus;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -43,6 +44,19 @@ public abstract class Post {
     @Column(nullable = false)
     private boolean featured = false;
 
+    @Enumerated(EnumType.STRING)
+    private PostStatus status = PostStatus.ACTIVE;
+
+    @Column(length = 500)
+    private String moderationReason;
+
+    @ManyToOne
+    @JoinColumn(name = "moderated_by")
+    private User moderatedBy;
+
+    @Column
+    private LocalDateTime lastModeratedAt;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "post_categories")
     private Set<Category> categories = new HashSet<>();
@@ -61,8 +75,6 @@ public abstract class Post {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    private boolean active = true;
-    
     @PrePersist
     protected void onCreate() {
         if (language == null && authorProfile != null) {

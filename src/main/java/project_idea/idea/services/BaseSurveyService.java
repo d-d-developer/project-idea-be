@@ -104,10 +104,7 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
         if (surveyDTO.description() != null) {
             survey.setDescription(surveyDTO.description());
         }
-        if (surveyDTO.active() != null) {
-            survey.setActive(surveyDTO.active());
-        }
-        
+
         if (surveyDTO.featured() != null) {
             survey.setFeatured(surveyDTO.featured());
         }
