@@ -49,6 +49,16 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
             survey.setFeatured(surveyDTO.featured());
         }
         
+        // Handle language override
+        if (surveyDTO.language() != null) {
+            if (!LanguageUtils.isValidLanguageCode(surveyDTO.language())) {
+                throw new BadRequestException("Invalid language code: " + surveyDTO.language());
+            }
+            survey.setLanguage(LanguageUtils.normalizeLanguageCode(surveyDTO.language()));
+        } else {
+            survey.setLanguage(currentUser.getPreferredLanguage());
+        }
+        
         return repository.save(survey);
     }
 
@@ -66,6 +76,16 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
         // Set featured flag if provided
         if (surveyDTO.featured() != null) {
             survey.setFeatured(surveyDTO.featured());
+        }
+        
+        // Handle language override
+        if (surveyDTO.language() != null) {
+            if (!LanguageUtils.isValidLanguageCode(surveyDTO.language())) {
+                throw new BadRequestException("Invalid language code: " + surveyDTO.language());
+            }
+            survey.setLanguage(LanguageUtils.normalizeLanguageCode(surveyDTO.language()));
+        } else {
+            survey.setLanguage(author.getPreferredLanguage());
         }
         
         survey.setAuthorProfile(author.getSocialProfile());

@@ -42,6 +42,12 @@ public record NewSurveyDTO(
     Boolean featured,
 
     @Schema(
+        description = "Optional language override (ISO 639-1 code). If not provided, user's preferred language will be used",
+        example = "en"
+    )
+    String language,
+
+    @Schema(
         description = "For multiple choice surveys: whether multiple options can be selected",
         example = "true"
     )

@@ -25,6 +25,12 @@ public record NewProjectDTO(
     @Schema(description = "Whether this project should be featured")
     Boolean featured,
 
+    @Schema(
+        description = "Optional language override (ISO 639-1 code). If not provided, user's preferred language will be used",
+        example = "en"
+    )
+    String language,
+
     @Schema(description = "Initial roadmap steps")
     @Size(min = 1, message = "At least one roadmap step is required")
     List<RoadmapStepDTO> roadmapSteps,

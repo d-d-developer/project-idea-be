@@ -41,6 +41,15 @@ public abstract class Post {
     @Column(length = 1000)
     private String description;
 
+    @Column(name = "featured_image_url")
+    private String featuredImageUrl;
+
+    @Column(name = "featured_image_public_id")
+    private String featuredImagePublicId;
+
+    @Column(name = "featured_image_alt")
+    private String featuredImageAlt;
+
     @Column(nullable = false)
     private boolean featured = false;
 

@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import project_idea.idea.entities.Post;
 import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.entities.User;
@@ -75,5 +76,14 @@ public class PostController {
             @AuthenticationPrincipal User currentUser) {
         Page<Post> postPage = postService.getMyPosts(currentUser, page, size, sortBy);
         return pagedResourcesAssembler.toModel(postPage);
+    }
+
+    @PatchMapping(path = "/{postId}/featured-image", consumes = "multipart/form-data")
+    @Operation(summary = "Upload or update post featured image")
+    public Post uploadFeaturedImage(@PathVariable UUID postId,
+                                    @RequestParam("image") MultipartFile file,
+                                    @RequestParam(required = false) String altText,
+                                    @AuthenticationPrincipal User currentUser) {
+        return postService.uploadFeaturedImage(postId, file, altText, currentUser);
     }
 }

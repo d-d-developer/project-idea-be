@@ -17,6 +17,7 @@ import project_idea.idea.payloads.project.RoadmapStepDTO;
 import project_idea.idea.repositories.ProjectRepository;
 import project_idea.idea.repositories.RoadmapStepRepository;
 import project_idea.idea.services.SocialProfileService;
+import project_idea.idea.utils.LanguageUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +43,16 @@ public class ProjectService {
         project.setDescription(projectDTO.description());
         project.setAuthorProfile(author.getSocialProfile());
         project.setFeatured(projectDTO.featured());
+
+        // Handle language override
+        if (projectDTO.language() != null) {
+            if (!LanguageUtils.isValidLanguageCode(projectDTO.language())) {
+                throw new BadRequestException("Invalid language code: " + projectDTO.language());
+            }
+            project.setLanguage(LanguageUtils.normalizeLanguageCode(projectDTO.language()));
+        } else {
+            project.setLanguage(author.getPreferredLanguage());
+        }
 
         if (projectDTO.categories() != null) {
             projectDTO.categories().forEach(categoryId -> 
