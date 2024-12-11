@@ -39,9 +39,11 @@ public class JWTCheckerFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         logger.debug("Processing request to: {}", request.getRequestURI());
         
+        // Allow requests without authentication header to proceed
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             logger.debug("No valid Authorization header found");
-            throw new UnauthorizedException("Please provide a valid Bearer token in the Authorization header");
+            filterChain.doFilter(request, response);
+            return;
         }
         
         String accessToken = authHeader.substring(7);
@@ -67,6 +69,10 @@ public class JWTCheckerFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return new AntPathMatcher().match("/auth/**", request.getServletPath()) ||
                 new AntPathMatcher().match("/categories", request.getServletPath()) ||
+                (request.getMethod().equals("GET") && 
+                 new AntPathMatcher().match("/posts", request.getServletPath()) &&
+                 new AntPathMatcher().match("/posts/**", request.getServletPath()) &&
+                 !request.getServletPath().contains("/me")) ||
                 new AntPathMatcher().match("/social-profiles", request.getServletPath()) ||
                 new AntPathMatcher().match("/social-profiles/*/public", request.getServletPath()) ||
                 new AntPathMatcher().match("/v3/api-docs/**", request.getServletPath()) ||

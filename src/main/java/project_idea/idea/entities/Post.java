@@ -1,6 +1,8 @@
 package project_idea.idea.entities;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,13 +17,19 @@ import java.util.UUID;
 @Entity
 @Table(name = "posts")
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "post_type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @Getter
 @Setter
 @NoArgsConstructor
 public abstract class Post {
     @Id
     @GeneratedValue
+    @Setter(AccessLevel.NONE)
     private UUID id;
+
+    @Column(name = "post_type", insertable = false, updatable = false)
+    private String type;
 
     @Column(nullable = false)
     private String title;
@@ -39,9 +47,13 @@ public abstract class Post {
     @JoinTable(name = "post_categories")
     private Set<Category> categories = new HashSet<>();
     
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "post_participants")
+    private Set<SocialProfile> participants = new HashSet<>();
+    
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author;
+    @JoinColumn(name = "author_profile_id", nullable = false)
+    private SocialProfile authorProfile;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -53,8 +65,8 @@ public abstract class Post {
     
     @PrePersist
     protected void onCreate() {
-        if (language == null && author != null) {
-            language = author.getPreferredLanguage();
+        if (language == null && authorProfile != null) {
+            language = authorProfile.getUser().getPreferredLanguage();
         }
     }
 }

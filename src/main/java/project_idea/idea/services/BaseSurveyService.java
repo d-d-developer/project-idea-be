@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import project_idea.idea.entities.BaseSurvey;
 import project_idea.idea.entities.User;
+import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
@@ -67,7 +68,7 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
             survey.setFeatured(surveyDTO.featured());
         }
         
-        survey.setAuthor(author);
+        survey.setAuthorProfile(author.getSocialProfile());
         return repository.save(survey);
     }
 
@@ -141,7 +142,7 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
     }
 
     protected void validateOwnership(T survey, User currentUser) {
-        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (!survey.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only modify your own surveys");
         }
     }

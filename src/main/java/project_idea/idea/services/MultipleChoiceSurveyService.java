@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import project_idea.idea.entities.MultipleChoiceSurvey;
-import project_idea.idea.entities.User;
+import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
@@ -62,20 +62,20 @@ public class MultipleChoiceSurveyService extends BaseSurveyService<MultipleChoic
                 .orElseThrow(() -> new NotFoundException(id));
     }
 
-    public void deleteSurvey(UUID id, User currentUser) {
+    public void deleteSurvey(UUID id, SocialProfile currentUser) {
         MultipleChoiceSurvey survey = getSurveyById(id);
         
-        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (!survey.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only delete your own surveys");
         }
 
         repository.delete(survey);
     }
 
-    public MultipleChoiceSurvey updateSurvey(UUID id, @Valid NewSurveyDTO surveyDTO, User currentUser) {
+    public MultipleChoiceSurvey updateSurvey(UUID id, @Valid NewSurveyDTO surveyDTO, SocialProfile currentUser) {
         MultipleChoiceSurvey survey = getSurveyById(id);
 
-        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (!survey.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only update your own surveys");
         }
 
@@ -87,10 +87,10 @@ public class MultipleChoiceSurveyService extends BaseSurveyService<MultipleChoic
         return repository.save(survey);
     }
 
-    public MultipleChoiceSurvey patchSurvey(UUID id, PartialSurveyUpdateDTO surveyDTO, User currentUser) {
+    public MultipleChoiceSurvey patchSurvey(UUID id, PartialSurveyUpdateDTO surveyDTO, SocialProfile currentUser) {
         MultipleChoiceSurvey survey = getSurveyById(id);
         
-        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (!survey.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only update your own surveys");
         }
 

@@ -1,5 +1,6 @@
 package project_idea.idea.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,9 +15,11 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
 public class SocialProfile {
     @Id
     @GeneratedValue
+    @Setter(AccessLevel.NONE)
     private UUID id;
     
     private static final String AVATAR_BASE_URL = "https://ui-avatars.com/api/?name=";
@@ -42,9 +45,10 @@ public class SocialProfile {
     @Column(name = "url")
     private Map<String, String> links = new HashMap<>();
 
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnore
+    @JsonBackReference("user-profile")
     private User user;
 
     public void updateAvatarUrl() {

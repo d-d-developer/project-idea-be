@@ -77,15 +77,6 @@ public class SocialProfileController {
         summary = "Upload profile avatar",
         description = "Upload a new avatar image for the current user's profile. Supports JPG, PNG, and GIF formats up to 5MB."
     )
-//    @Parameter(
-//        name = "avatar",
-//        description = "Image file to upload",
-//        required = true,
-//        content = @Content(
-//            mediaType = "multipart/form-data",
-//            schema = @Schema(type = "file", format = "binary")
-//        )
-//    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Avatar successfully uploaded"),
         @ApiResponse(responseCode = "400", description = "Invalid file format or size"),

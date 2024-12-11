@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import project_idea.idea.entities.OpenEndedResponse;
 import project_idea.idea.entities.OpenEndedSurvey;
-import project_idea.idea.entities.User;
+import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.OpenEndedSurveyResponseDTO;
@@ -21,15 +21,15 @@ public class OpenEndedResponseService {
     @Autowired
     private OpenEndedSurveyService surveyService;
 
-    public OpenEndedResponse submitResponse(UUID surveyId, OpenEndedSurveyResponseDTO responseDTO, User currentUser) {
+    public OpenEndedResponse submitResponse(UUID surveyId, OpenEndedSurveyResponseDTO responseDTO, SocialProfile currentProfile) {
         OpenEndedSurvey survey = surveyService.getSurveyById(surveyId);
         
         // Prevent users from responding to their own surveys
-        if (survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (survey.getAuthorProfile().getId().equals(currentProfile.getId())) {
             throw new BadRequestException("You cannot respond to your own survey");
         }
 
-        if (responseRepository.findBySurveyAndUser(survey, currentUser).isPresent()) {
+        if (responseRepository.findBySurveyAndSocialProfile(survey, currentProfile).isPresent()) {
             throw new BadRequestException("You have already responded to this survey");
         }
 
@@ -39,7 +39,7 @@ public class OpenEndedResponseService {
 
         OpenEndedResponse response = new OpenEndedResponse();
         response.setSurvey(survey);
-        response.setUser(currentUser);
+        response.setSocialProfile(currentProfile);
         response.setResponse(responseDTO.response());
 
         return responseRepository.save(response);
@@ -50,12 +50,12 @@ public class OpenEndedResponseService {
         return responseRepository.findBySurvey(survey);
     }
 
-    public void deleteResponse(UUID responseId, User currentUser) {
+    public void deleteResponse(UUID responseId, SocialProfile currentProfile) {
         OpenEndedResponse response = responseRepository.findById(responseId)
             .orElseThrow(() -> new NotFoundException(responseId));
         
-        if (!response.getUser().getId().equals(currentUser.getId()) &&
-            !response.getSurvey().getAuthor().getId().equals(currentUser.getId())) {
+        if (!response.getSocialProfile().getId().equals(currentProfile.getId()) &&
+            !response.getSurvey().getAuthorProfile().getId().equals(currentProfile.getId())) {
             throw new BadRequestException("You can only delete your own responses or responses to your surveys");
         }
         

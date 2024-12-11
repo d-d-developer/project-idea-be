@@ -156,4 +156,9 @@ public class SocialProfileService {
 
         return this.socialProfileRepository.save(found);
     }
+
+    public SocialProfile findById(UUID id) {
+        return socialProfileRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Social profile not found with id: " + id));
+    }
 }

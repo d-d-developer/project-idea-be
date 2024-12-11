@@ -42,7 +42,6 @@ public class UsersController {
     @Operation(
             summary = "Get all users",
             description = "Retrieves a paged list of all users. Requires ADMIN authority.",
-            tags = {"User"},
             responses = {
                     @ApiResponse(
                             responseCode = "200",

@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.OpenEndedResponse;
 import project_idea.idea.entities.MultipleChoiceResponse;
+import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.entities.User;
 import project_idea.idea.payloads.ErrorsResponseDTO;
 import project_idea.idea.payloads.survey.OpenEndedSurveyResponseDTO;
@@ -39,7 +40,7 @@ public class SurveyResponseController {
     private OpenEndedResponseService openEndedResponseService;
     
     @Autowired
-    private MultipleChoiceResponseService MultipleChoiceResponseService;
+    private MultipleChoiceResponseService multipleChoiceResponseService;
 
     @PostMapping("/open-ended/{surveyId}")
     @ResponseStatus(HttpStatus.CREATED)
@@ -51,7 +52,8 @@ public class SurveyResponseController {
             @PathVariable UUID surveyId,
             @RequestBody @Valid OpenEndedSurveyResponseDTO responseDTO,
             @AuthenticationPrincipal User currentUser) {
-        return openEndedResponseService.submitResponse(surveyId, responseDTO, currentUser);
+        SocialProfile profile = currentUser.getSocialProfile();
+        return openEndedResponseService.submitResponse(surveyId, responseDTO, profile);
     }
 
     @PostMapping("/multiple-choice/{surveyId}")
@@ -64,7 +66,8 @@ public class SurveyResponseController {
             @PathVariable UUID surveyId,
             @RequestBody @Valid MultipleChoiceSurveyResponseDTO responseDTO,
             @AuthenticationPrincipal User currentUser) {
-        return MultipleChoiceResponseService.submitResponse(surveyId, responseDTO, currentUser);
+        SocialProfile profile = currentUser.getSocialProfile();
+        return multipleChoiceResponseService.submitResponse(surveyId, responseDTO, profile);
     }
 
     @GetMapping("/open-ended/survey/{surveyId}")
@@ -76,13 +79,13 @@ public class SurveyResponseController {
     @GetMapping("/multiple-choice/survey/{surveyId}")
     @Operation(summary = "Get all responses for a multiple choice survey")
     public List<MultipleChoiceResponse> getMultipleChoiceResponses(@PathVariable UUID surveyId) {
-        return MultipleChoiceResponseService.getSurveyResponses(surveyId);
+        return multipleChoiceResponseService.getSurveyResponses(surveyId);
     }
 
     @GetMapping("/multiple-choice/survey/{surveyId}/statistics")
     @Operation(summary = "Get response statistics for a multiple choice survey")
     public Map<String, Long> getResponseStatistics(@PathVariable UUID surveyId) {
-        return MultipleChoiceResponseService.getResponseStatistics(surveyId);
+        return multipleChoiceResponseService.getResponseStatistics(surveyId);
     }
 
     @DeleteMapping("/open-ended/{responseId}")
@@ -91,7 +94,8 @@ public class SurveyResponseController {
     public void deleteOpenEndedResponse(
             @PathVariable UUID responseId,
             @AuthenticationPrincipal User currentUser) {
-        openEndedResponseService.deleteResponse(responseId, currentUser);
+        SocialProfile profile = currentUser.getSocialProfile();
+        openEndedResponseService.deleteResponse(responseId, profile);
     }
 
     @DeleteMapping("/multiple-choice/{responseId}")
@@ -100,6 +104,7 @@ public class SurveyResponseController {
     public void deleteMultipleChoiceResponse(
             @PathVariable UUID responseId,
             @AuthenticationPrincipal User currentUser) {
-        MultipleChoiceResponseService.deleteResponse(responseId, currentUser);
+        SocialProfile profile = currentUser.getSocialProfile();
+        multipleChoiceResponseService.deleteResponse(responseId, profile);
     }
 }

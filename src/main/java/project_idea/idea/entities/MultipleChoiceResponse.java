@@ -3,6 +3,7 @@ package project_idea.idea.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class MultipleChoiceResponse {
     @Id
     @GeneratedValue
+    @Setter(AccessLevel.NONE)
     private UUID id;
 
     @ManyToOne
@@ -29,7 +31,7 @@ public class MultipleChoiceResponse {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private SocialProfile socialProfile;
 
     @ElementCollection
     @CollectionTable(name = "survey_selected_options")

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import project_idea.idea.entities.MultipleChoiceResponse;
 import project_idea.idea.entities.MultipleChoiceSurvey;
-import project_idea.idea.entities.User;
+import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.payloads.survey.MultipleChoiceSurveyResponseDTO;
 import project_idea.idea.repositories.MultipleChoiceResponseRepository;
@@ -23,15 +23,15 @@ public class MultipleChoiceResponseService {
     @Autowired
     private MultipleChoiceSurveyService surveyService;
 
-    public MultipleChoiceResponse submitResponse(UUID surveyId, MultipleChoiceSurveyResponseDTO responseDTO, User currentUser) {
+    public MultipleChoiceResponse submitResponse(UUID surveyId, MultipleChoiceSurveyResponseDTO responseDTO, SocialProfile currentProfile) {
         MultipleChoiceSurvey survey = surveyService.getSurveyById(surveyId);
         
         // Prevent users from responding to their own surveys
-        if (survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (survey.getAuthorProfile().getId().equals(currentProfile.getId())) {
             throw new BadRequestException("You cannot respond to your own survey");
         }
 
-        Optional<MultipleChoiceResponse> existingResponse = responseRepository.findBySurveyAndUser(survey, currentUser);
+        Optional<MultipleChoiceResponse> existingResponse = responseRepository.findBySurveyAndSocialProfile(survey, currentProfile);
         if (existingResponse.isPresent()) {
             throw new BadRequestException("You have already responded to this survey");
         }
@@ -48,7 +48,7 @@ public class MultipleChoiceResponseService {
 
         MultipleChoiceResponse response = new MultipleChoiceResponse();
         response.setSurvey(survey);
-        response.setUser(currentUser);
+        response.setSocialProfile(currentProfile);
         response.setSelectedOptions(responseDTO.selectedOptions());
 
         survey.getResponses().add(response);
@@ -73,12 +73,12 @@ public class MultipleChoiceResponseService {
                 ));
     }
 
-    public void deleteResponse(UUID responseId, User currentUser) {
+    public void deleteResponse(UUID responseId, SocialProfile currentUser) {
         MultipleChoiceResponse response = responseRepository.findById(responseId)
             .orElseThrow(() -> new BadRequestException("Response not found"));
         
-        if (!response.getUser().getId().equals(currentUser.getId()) &&
-            !response.getSurvey().getAuthor().getId().equals(currentUser.getId())) {
+        if (!response.getSocialProfile().getId().equals(currentUser.getId()) &&
+            !response.getSurvey().getAuthorProfile().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only delete your own responses or responses to your surveys");
         }
         

@@ -55,7 +55,7 @@ public class OpenEndedSurveyService extends BaseSurveyService<OpenEndedSurvey> {
     public void deleteSurvey(UUID id, User currentUser) {
         OpenEndedSurvey survey = getSurveyById(id);
         
-        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (!survey.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only delete your own surveys");
         }
 
@@ -73,7 +73,7 @@ public class OpenEndedSurveyService extends BaseSurveyService<OpenEndedSurvey> {
     public OpenEndedSurvey patchSurvey(UUID id, PartialSurveyUpdateDTO surveyDTO, User currentUser) {
         OpenEndedSurvey survey = getSurveyById(id);
         
-        if (!survey.getAuthor().getId().equals(currentUser.getId())) {
+        if (!survey.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only update your own surveys");
         }
 
