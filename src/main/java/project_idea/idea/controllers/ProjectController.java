@@ -1,22 +1,21 @@
 package project_idea.idea.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import project_idea.idea.entities.Attachment;
 import project_idea.idea.entities.Project;
+import project_idea.idea.entities.RoadmapStep;
 import project_idea.idea.entities.User;
+import project_idea.idea.enums.ProgressStatus;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.payloads.project.NewProjectDTO;
 import project_idea.idea.services.AttachmentService;
@@ -125,5 +124,23 @@ public class ProjectController {
         }
 
         attachmentService.deleteAttachment(attachmentId, currentUser);
+    }
+
+    @PatchMapping("/roadmap-steps/{stepId}/dependencies")
+    @Operation(summary = "Update roadmap step dependencies status")
+    public RoadmapStep updateStepDependencies(
+            @PathVariable UUID stepId,
+            @RequestParam ProgressStatus status,
+            @AuthenticationPrincipal User currentUser) {
+        RoadmapStep step = projectService.getStepById(stepId);
+        Project project = step.getProject();
+
+        // Verify permissions
+        if (!project.getAuthorProfile().getUser().getId().equals(currentUser.getId()) &&
+            !project.getParticipants().contains(currentUser.getSocialProfile())) {
+            throw new BadRequestException("Only project author or participants can update step dependencies");
+        }
+
+        return projectService.updateStepStatus(stepId, status);
     }
 }

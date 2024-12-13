@@ -11,10 +11,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.BadRequestException;
-import project_idea.idea.payloads.ErrorsResponseDTO;
-import project_idea.idea.payloads.NewUserDTO;
-import project_idea.idea.payloads.UserLoginDTO;
-import project_idea.idea.payloads.UserLoginResponseDTO;
+import project_idea.idea.payloads.error.ErrorsResponseDTO;
+import project_idea.idea.payloads.user.NewUserDTO;
+import project_idea.idea.payloads.user.UserLoginDTO;
+import project_idea.idea.payloads.user.UserLoginResponseDTO;
 import project_idea.idea.services.AuthService;
 import project_idea.idea.services.UsersService;
 

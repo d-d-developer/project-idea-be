@@ -18,11 +18,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.User;
-import com.fasterxml.jackson.annotation.JsonView;
 
 import project_idea.idea.exceptions.BadRequestException;
-import project_idea.idea.payloads.ErrorsResponseDTO;
-import project_idea.idea.payloads.PartialUserUpdateDTO;
+import project_idea.idea.payloads.user.PartialUserUpdateDTO;
 import project_idea.idea.services.UsersService;
 
 import java.util.UUID;

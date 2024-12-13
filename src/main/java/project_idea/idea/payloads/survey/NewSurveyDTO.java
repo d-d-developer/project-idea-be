@@ -36,6 +36,11 @@ public record NewSurveyDTO(
     Set<UUID> categories,
     
     @Schema(
+        description = "Optional thread ID to associate with this survey"
+    )
+    UUID threadId,
+
+    @Schema(
         description = "Whether this survey should be featured",
         example = "true"
     )

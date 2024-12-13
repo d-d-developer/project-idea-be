@@ -1,7 +1,6 @@
 package project_idea.idea.services;
 
 import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -16,8 +15,8 @@ import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.repositories.SocialProfileRepository;
 import project_idea.idea.repositories.UsersRepository;
-import project_idea.idea.payloads.PartialSocialProfileUpdateDTO;
-import project_idea.idea.payloads.SocialProfileUpdateDTO;
+import project_idea.idea.payloads.socialProfile.PartialSocialProfileUpdateDTO;
+import project_idea.idea.payloads.socialProfile.SocialProfileUpdateDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.IOException;
 import java.util.HashMap;

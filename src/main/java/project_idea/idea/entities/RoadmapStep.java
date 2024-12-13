@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import project_idea.idea.enums.ProgressStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -31,19 +32,17 @@ public class RoadmapStep {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StepStatus status = StepStatus.TODO;
+    private ProgressStatus status = ProgressStatus.TODO;
 
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)
     @JsonBackReference("project-roadmap")
     private Project project;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "linked_post_id")
+    private Post linkedPost;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    public enum StepStatus {
-        TODO,
-        IN_PROGRESS,
-        COMPLETED
-    }
 }

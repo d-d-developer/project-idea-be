@@ -14,7 +14,7 @@ import project_idea.idea.entities.OpenEndedResponse;
 import project_idea.idea.entities.MultipleChoiceResponse;
 import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.entities.User;
-import project_idea.idea.payloads.ErrorsResponseDTO;
+import project_idea.idea.payloads.error.ErrorsResponseDTO;
 import project_idea.idea.payloads.survey.OpenEndedSurveyResponseDTO;
 import project_idea.idea.payloads.survey.MultipleChoiceSurveyResponseDTO;
 import project_idea.idea.services.OpenEndedResponseService;

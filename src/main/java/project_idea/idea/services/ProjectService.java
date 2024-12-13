@@ -6,18 +6,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import project_idea.idea.entities.Project;
-import project_idea.idea.entities.RoadmapStep;
-import project_idea.idea.entities.SocialProfile;
-import project_idea.idea.entities.User;
+import project_idea.idea.entities.*;
+import project_idea.idea.entities.Thread;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.project.NewProjectDTO;
 import project_idea.idea.payloads.project.RoadmapStepDTO;
 import project_idea.idea.repositories.ProjectRepository;
 import project_idea.idea.repositories.RoadmapStepRepository;
-import project_idea.idea.services.SocialProfileService;
+import project_idea.idea.repositories.PostRepository;
 import project_idea.idea.utils.LanguageUtils;
+import project_idea.idea.enums.ProgressStatus;
+import project_idea.idea.enums.PostType;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,14 +35,28 @@ public class ProjectService {
     private SocialProfileService socialProfileService;
 
     @Autowired
+    private PostRepository<Post> postRepository;
+
+    @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private ThreadService threadService;
 
     public Project createProject(NewProjectDTO projectDTO, User author) {
         Project project = new Project();
         project.setTitle(projectDTO.title());
+        project.setType(PostType.PROJECT);
         project.setDescription(projectDTO.description());
         project.setAuthorProfile(author.getSocialProfile());
         project.setFeatured(projectDTO.featured());
+
+        // Handle thread association if threadId is provided
+        if (projectDTO.threadId() != null) {
+            Thread thread = threadService.getThreadById(projectDTO.threadId());
+            threadService.validateThreadForPost(thread, project);
+            project.setThread(thread);
+        }
 
         // Handle language override
         if (projectDTO.language() != null) {
@@ -85,6 +99,17 @@ public class ProjectService {
         step.setOrderIndex(stepDTO.orderIndex());
         step.setStatus(stepDTO.status());
         step.setProject(project);
+
+        if (stepDTO.linkedPostId() != null) {
+            Post linkedPost = postRepository.findById(stepDTO.linkedPostId())
+                .orElseThrow(() -> new NotFoundException("Linked post not found"));
+            // Validate post type
+            if (!(linkedPost instanceof Fundraiser) && !(linkedPost instanceof Inquiry)) {
+                throw new BadRequestException("Linked post must be either a Fundraiser or Inquiry");
+            }
+            step.setLinkedPost(linkedPost);
+        }
+
         return step;
     }
 
@@ -111,21 +136,24 @@ public class ProjectService {
         return projectRepository.findByParticipantsId(socialProfileService.getSocialProfileByUserId(userId).getId(), pageable);
     }
 
-    public RoadmapStep updateRoadmapStep(UUID projectId, UUID stepId, RoadmapStepDTO stepDTO, User currentUser) {
-        Project project = getProjectById(projectId);
-        if (!project.getAuthorProfile().getUser().getId().equals(currentUser.getId()) && 
-            !project.getParticipants().contains(currentUser.getSocialProfile())) {
-            throw new BadRequestException("You must be a project participant to update roadmap steps");
-        }
-
+    public RoadmapStep updateStepStatus(UUID stepId, ProgressStatus newStatus) {
         RoadmapStep step = roadmapStepRepository.findById(stepId)
             .orElseThrow(() -> new NotFoundException("Roadmap step not found"));
-
-        step.setTitle(stepDTO.title());
-        step.setDescription(stepDTO.description());
-        step.setOrderIndex(stepDTO.orderIndex());
-        step.setStatus(stepDTO.status());
-
+        
+        // Update step status
+        step.setStatus(newStatus);
+        
+        // If there's a linked post, update its status too
+        if (step.getLinkedPost() != null) {
+            Post linkedPost = step.getLinkedPost();
+            if (linkedPost instanceof Inquiry) {
+                ((Inquiry) linkedPost).setProgressStatus(newStatus);
+            } else if (linkedPost instanceof Fundraiser) {
+                ((Fundraiser) linkedPost).setProgressStatus(newStatus);
+            }
+            postRepository.save(linkedPost);
+        }
+        
         return roadmapStepRepository.save(step);
     }
 
@@ -151,5 +179,10 @@ public class ProjectService {
         
         project.getParticipants().remove(profile);
         return projectRepository.save(project);
+    }
+
+    public RoadmapStep getStepById(UUID stepId) {
+        return roadmapStepRepository.findById(stepId)
+            .orElseThrow(() -> new NotFoundException("Roadmap step not found with id: " + stepId));
     }
 }

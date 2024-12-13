@@ -1,6 +1,6 @@
 package project_idea.idea.entities;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import project_idea.idea.enums.PostStatus;
+import project_idea.idea.enums.Visibility;
+import project_idea.idea.enums.PostType;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,8 +19,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "posts")
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "post_type")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,14 +28,28 @@ public abstract class Post {
     @Setter(AccessLevel.NONE)
     private UUID id;
 
-    @Column(name = "post_type", insertable = false, updatable = false)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "post_type", nullable = false)
+    private PostType type;
 
     @Column(nullable = false)
     private String title;
 
     @Column(nullable = false)
     private String language;
+
+    @ManyToOne
+    @JoinColumn(name = "thread_id")
+    @JsonBackReference("thread-posts")
+    private Thread thread;
+
+    // Add a method to get thread ID that will be included in JSON
+    public UUID getThreadId() {
+        if (thread != null) {
+            return thread.getId();
+        }
+        return null;
+    }
 
     @Column(length = 1000)
     private String description;
@@ -54,7 +67,7 @@ public abstract class Post {
     private boolean featured = false;
 
     @Enumerated(EnumType.STRING)
-    private PostStatus status = PostStatus.ACTIVE;
+    private Visibility visibility = Visibility.ACTIVE;
 
     @Column(length = 500)
     private String moderationReason;
@@ -69,10 +82,6 @@ public abstract class Post {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "post_categories")
     private Set<Category> categories = new HashSet<>();
-    
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "post_participants")
-    private Set<SocialProfile> participants = new HashSet<>();
     
     @ManyToOne
     @JoinColumn(name = "author_profile_id", nullable = false)

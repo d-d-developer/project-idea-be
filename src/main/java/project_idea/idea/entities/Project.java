@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import project_idea.idea.enums.PostType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,6 +22,14 @@ import java.util.Set;
 @NoArgsConstructor
 public class Project extends Post {
 
+    @PrePersist
+    protected void onCreate() {
+        super.onCreate();
+        if (getType() == null) {
+            setType(PostType.PROJECT);
+        }
+    }
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("project-roadmap")
     @OrderBy("orderIndex ASC")
@@ -33,7 +42,7 @@ public class Project extends Post {
     @ManyToMany
     @JoinTable(
         name = "project_participants",
-        joinColumns = @JoinColumn(name = "project_id"),
+        joinColumns = @JoinColumn(name = "project_id", nullable = false),
         inverseJoinColumns = @JoinColumn(name = "social_profile_id")
     )
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")

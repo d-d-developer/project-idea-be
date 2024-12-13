@@ -9,18 +9,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import project_idea.idea.entities.Role;
-import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
-import project_idea.idea.payloads.NewUserDTO;
-import project_idea.idea.payloads.PartialUserUpdateDTO;
+import project_idea.idea.payloads.user.NewUserDTO;
+import project_idea.idea.payloads.user.PartialUserUpdateDTO;
 import project_idea.idea.repositories.UsersRepository;
-import project_idea.idea.services.RoleService;
-import project_idea.idea.services.CategoryService;
-import project_idea.idea.services.UsernameSuggestionService;
 
-import java.util.HashMap;
 import java.util.UUID;
 
 @Service

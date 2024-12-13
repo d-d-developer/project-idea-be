@@ -1,6 +1,6 @@
 package project_idea.idea.enums;
 
-public enum PostStatus {
+public enum Visibility {
     ACTIVE,
     HIDDEN,
     DELETED

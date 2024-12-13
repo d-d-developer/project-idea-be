@@ -1,4 +1,4 @@
-package project_idea.idea.payloads;
+package project_idea.idea.payloads.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

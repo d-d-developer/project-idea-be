@@ -8,7 +8,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import project_idea.idea.entities.MultipleChoiceSurvey;
 import project_idea.idea.entities.SocialProfile;
-import project_idea.idea.enums.PostStatus;
+import project_idea.idea.enums.PostType;
+import project_idea.idea.enums.Visibility;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
@@ -49,6 +50,7 @@ public class MultipleChoiceSurveyService extends BaseSurveyService<MultipleChoic
         }
         MultipleChoiceSurvey survey = new MultipleChoiceSurvey();
         survey.setAllowMultipleAnswers(surveyDTO.allowMultipleAnswers());
+        survey.setType(PostType.SURVEY);
         survey.setOptions(surveyDTO.options());
         return survey;
     }
@@ -56,7 +58,7 @@ public class MultipleChoiceSurveyService extends BaseSurveyService<MultipleChoic
     public Page<MultipleChoiceSurvey> getAllSurveys(int page, int size, String sortBy) {
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findByStatus(PostStatus.ACTIVE, pageable);
+        return repository.findByVisibility(Visibility.ACTIVE, pageable);
     }
 
     public MultipleChoiceSurvey getSurveyById(UUID id) {

@@ -1,4 +1,4 @@
-package project_idea.idea.payloads;
+package project_idea.idea.payloads.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Set;
 import java.util.UUID;
+import project_idea.idea.enums.UserType;
 
 public record NewUserDTO(
     @Schema(
@@ -70,6 +71,13 @@ public record NewUserDTO(
     )
     @Pattern(regexp = "^[a-z]{2}$", message = "Language must be a valid ISO 639-1 code")
     String preferredLanguage,
+
+    @Schema(
+            description = "User type (PROFESSIONAL, CREATOR, or INVESTOR)",
+            example = "CREATOR",
+            required = true
+    )
+    UserType userType,
     
     @Schema(
         description = "Set of category IDs representing user's interests",

@@ -36,5 +36,8 @@ public record NewProjectDTO(
     List<RoadmapStepDTO> roadmapSteps,
 
     @Schema(description = "Initial project participant profile IDs")
-    Set<UUID> participantProfileIds
+    Set<UUID> participantProfileIds,
+
+    @Schema(description = "Optional thread ID to associate with this project")
+    UUID threadId
 ) {}

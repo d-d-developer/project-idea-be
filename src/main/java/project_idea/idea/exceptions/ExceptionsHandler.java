@@ -8,8 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import project_idea.idea.payloads.ErrorsResponseDTO;
-import project_idea.idea.payloads.ErrorsResponseWithErrorsListDTO;
+import project_idea.idea.payloads.error.ErrorsResponseDTO;
+import project_idea.idea.payloads.error.ErrorsResponseWithErrorsListDTO;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

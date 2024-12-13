@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import project_idea.idea.entities.User;
 import project_idea.idea.enums.UserStatus;
 import project_idea.idea.exceptions.UnauthorizedException;
-import project_idea.idea.payloads.UserLoginDTO;
+import project_idea.idea.payloads.user.UserLoginDTO;
 import project_idea.idea.tools.JWT;
 
 import java.time.LocalDateTime;

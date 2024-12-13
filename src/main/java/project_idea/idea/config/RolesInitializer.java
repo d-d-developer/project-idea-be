@@ -7,7 +7,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import project_idea.idea.entities.Role;
 import project_idea.idea.entities.User;
-import project_idea.idea.payloads.NewUserDTO;
+import project_idea.idea.enums.UserType;
+import project_idea.idea.payloads.user.NewUserDTO;
 import project_idea.idea.repositories.RoleRepository;
 import project_idea.idea.services.UsersService;
 
@@ -47,6 +48,7 @@ public class RolesInitializer implements CommandLineRunner {
                     "admin@example.com",
                     "password123",
                     "en",
+                    UserType.CREATOR,
                         null
                 );
                 

@@ -1,7 +1,6 @@
 package project_idea.idea.services;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +13,8 @@ import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.repositories.OpenEndedSurveyRepository;
-import project_idea.idea.enums.PostStatus;
+import project_idea.idea.enums.Visibility;
+import project_idea.idea.enums.PostType;
 
 import java.util.UUID;
 
@@ -40,13 +40,15 @@ public class OpenEndedSurveyService extends BaseSurveyService<OpenEndedSurvey> {
         if (!surveyDTO.isOpenEnded()) {
             throw new BadRequestException("This Data Transfer Object is not for an open-ended survey");
         }
-        return new OpenEndedSurvey();
+        OpenEndedSurvey survey = new OpenEndedSurvey();
+        survey.setType(PostType.SURVEY);
+        return survey;
     }
 
     public Page<OpenEndedSurvey> getAllSurveys(int page, int size, String sortBy) {
         if (size > 100) size = 100;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findByStatus(PostStatus.ACTIVE, pageable);
+        return repository.findByVisibility(Visibility.ACTIVE, pageable);
     }
 
     public OpenEndedSurvey getSurveyById(UUID id) {

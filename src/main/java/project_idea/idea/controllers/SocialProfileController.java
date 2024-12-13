@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -19,14 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.entities.User;
 import project_idea.idea.exceptions.UnauthorizedException;
-import project_idea.idea.payloads.ErrorsResponseDTO;
-import project_idea.idea.payloads.PartialSocialProfileUpdateDTO;
-import project_idea.idea.payloads.SocialProfileUpdateDTO;
+import project_idea.idea.payloads.socialProfile.PartialSocialProfileUpdateDTO;
+import project_idea.idea.payloads.socialProfile.SocialProfileUpdateDTO;
 import project_idea.idea.services.SocialProfileService;
 
-import java.util.UUID;
-
-import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.data.web.PagedResourcesAssembler;

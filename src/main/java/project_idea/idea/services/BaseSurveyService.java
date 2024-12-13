@@ -9,12 +9,14 @@ import org.springframework.data.domain.Sort;
 import project_idea.idea.entities.BaseSurvey;
 import project_idea.idea.entities.User;
 import project_idea.idea.entities.SocialProfile;
+import project_idea.idea.entities.Thread;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.survey.NewSurveyDTO;
 import project_idea.idea.payloads.survey.PartialSurveyUpdateDTO;
 import project_idea.idea.repositories.PostRepository;
 import project_idea.idea.services.CategoryService;
+import project_idea.idea.services.ThreadService;
 import project_idea.idea.utils.LanguageUtils;
 
 import java.util.UUID;
@@ -25,6 +27,9 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
     
     @Autowired
     protected CategoryService categoryService;
+
+    @Autowired
+    protected ThreadService threadService;
 
     protected BaseSurveyService(PostRepository<T> repository) {
         this.repository = repository;
@@ -37,6 +42,13 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
         validateOwnership(survey, currentUser);
         survey.setTitle(surveyDTO.title());
         survey.setDescription(surveyDTO.description());
+        
+        // Handle thread association if threadId is provided
+        if (surveyDTO.threadId() != null) {
+            Thread thread = threadService.getThreadById(surveyDTO.threadId());
+            threadService.validateThreadForPost(thread, survey);
+            survey.setThread(thread);
+        }
         
         // Update categories
         survey.getCategories().clear();
@@ -67,6 +79,14 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
         T survey = createSurveyInstance(surveyDTO);
         survey.setTitle(surveyDTO.title());
         survey.setDescription(surveyDTO.description());
+        survey.setAuthorProfile(author.getSocialProfile());
+        
+        // Handle thread association if threadId is provided
+        if (surveyDTO.threadId() != null) {
+            Thread thread = threadService.getThreadById(surveyDTO.threadId());
+            threadService.validateThreadForPost(thread, survey);
+            survey.setThread(thread);
+        }
         
         // Add categories if provided
         if (surveyDTO.categories() != null) {
@@ -88,7 +108,6 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
             survey.setLanguage(author.getPreferredLanguage());
         }
         
-        survey.setAuthorProfile(author.getSocialProfile());
         return repository.save(survey);
     }
 

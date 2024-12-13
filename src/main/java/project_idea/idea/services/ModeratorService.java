@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import project_idea.idea.entities.ModeratorAction;
 import project_idea.idea.enums.ModeratorActionType;
 import project_idea.idea.entities.Post;
-import project_idea.idea.enums.PostStatus;
+import project_idea.idea.enums.Visibility;
 import project_idea.idea.entities.User;
 import project_idea.idea.enums.UserStatus;
 import project_idea.idea.exceptions.BadRequestException;
@@ -86,7 +86,7 @@ public class ModeratorService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
 
-        post.setStatus(PostStatus.HIDDEN);
+        post.setVisibility(Visibility.HIDDEN);
         post.setModerationReason(reason);
         post.setModeratedBy(moderator);
         post.setLastModeratedAt(LocalDateTime.now());
@@ -106,7 +106,7 @@ public class ModeratorService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
 
-        post.setStatus(PostStatus.DELETED);
+        post.setVisibility(Visibility.DELETED);
         post.setModerationReason(reason);
         post.setModeratedBy(moderator);
         post.setLastModeratedAt(LocalDateTime.now());
@@ -173,11 +173,11 @@ public class ModeratorService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
 
-        if (post.getStatus() != PostStatus.HIDDEN) {
+        if (post.getVisibility() != Visibility.HIDDEN) {
             throw new BadRequestException("Post is not hidden");
         }
 
-        post.setStatus(PostStatus.ACTIVE);
+        post.setVisibility(Visibility.ACTIVE);
         post.setModerationReason(null);
         post.setModeratedBy(moderator);
         post.setLastModeratedAt(LocalDateTime.now());
