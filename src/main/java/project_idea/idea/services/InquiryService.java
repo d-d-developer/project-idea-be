@@ -10,6 +10,7 @@ import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.inquiry.InquiryApplicationDTO;
 import project_idea.idea.payloads.inquiry.NewInquiryDTO;
+import project_idea.idea.payloads.inquiry.PartialInquiryUpdateDTO;
 import project_idea.idea.repositories.InquiryApplicationRepository;
 import project_idea.idea.repositories.InquiryRepository;
 import project_idea.idea.utils.LanguageUtils;
@@ -45,7 +46,6 @@ public class InquiryService {
         // Handle thread association if threadId is provided
         if (inquiryDTO.threadId() != null) {
             Thread thread = threadService.getThreadById(inquiryDTO.threadId());
-            threadService.validateThreadForPost(thread, inquiry);
             inquiry.setThread(thread);
         }
 
@@ -105,5 +105,48 @@ public class InquiryService {
     public Inquiry getInquiryById(UUID id) {
         return inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Inquiry not found with id: " + id));
+    }
+
+    public Inquiry updateInquiry(UUID id, PartialInquiryUpdateDTO inquiryDTO, User currentUser) {
+        Inquiry inquiry = getInquiryById(id);
+        
+        if (!inquiry.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Only inquiry author can update the inquiry");
+        }
+
+        if (inquiryDTO.title() != null) {
+            inquiry.setTitle(inquiryDTO.title());
+        }
+        
+        if (inquiryDTO.description() != null) {
+            inquiry.setDescription(inquiryDTO.description());
+        }
+
+        if (inquiryDTO.professionalRole() != null) {
+            inquiry.setProfessionalRole(inquiryDTO.professionalRole());
+        }
+
+        if (inquiryDTO.location() != null) {
+            inquiry.setLocation(inquiryDTO.location());
+        }
+
+        if (inquiryDTO.featured() != null) {
+            inquiry.setFeatured(inquiryDTO.featured());
+        }
+
+        if (inquiryDTO.categories() != null) {
+            inquiry.getCategories().clear();
+            inquiryDTO.categories().forEach(categoryId ->
+                inquiry.getCategories().add(categoryService.getCategoryById(categoryId)));
+        }
+
+        if (inquiryDTO.language() != null) {
+            if (!LanguageUtils.isValidLanguageCode(inquiryDTO.language())) {
+                throw new BadRequestException("Invalid language code: " + inquiryDTO.language());
+            }
+            inquiry.setLanguage(LanguageUtils.normalizeLanguageCode(inquiryDTO.language()));
+        }
+
+        return inquiryRepository.save(inquiry);
     }
 }

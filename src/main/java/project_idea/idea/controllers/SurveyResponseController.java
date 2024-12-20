@@ -70,18 +70,6 @@ public class SurveyResponseController {
         return multipleChoiceResponseService.submitResponse(surveyId, responseDTO, profile);
     }
 
-    @GetMapping("/open-ended/survey/{surveyId}")
-    @Operation(summary = "Get all responses for an open ended survey")
-    public List<OpenEndedResponse> getOpenEndedResponses(@PathVariable UUID surveyId) {
-        return openEndedResponseService.getSurveyResponses(surveyId);
-    }
-
-    @GetMapping("/multiple-choice/survey/{surveyId}")
-    @Operation(summary = "Get all responses for a multiple choice survey")
-    public List<MultipleChoiceResponse> getMultipleChoiceResponses(@PathVariable UUID surveyId) {
-        return multipleChoiceResponseService.getSurveyResponses(surveyId);
-    }
-
     @GetMapping("/multiple-choice/survey/{surveyId}/statistics")
     @Operation(summary = "Get response statistics for a multiple choice survey")
     public Map<String, Long> getResponseStatistics(@PathVariable UUID surveyId) {

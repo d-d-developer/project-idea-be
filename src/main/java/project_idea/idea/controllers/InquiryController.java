@@ -13,6 +13,7 @@ import project_idea.idea.entities.InquiryApplication;
 import project_idea.idea.entities.User;
 import project_idea.idea.payloads.inquiry.InquiryApplicationDTO;
 import project_idea.idea.payloads.inquiry.NewInquiryDTO;
+import project_idea.idea.payloads.inquiry.PartialInquiryUpdateDTO;
 import project_idea.idea.services.InquiryService;
 
 import java.util.List;
@@ -48,5 +49,13 @@ public class InquiryController {
     public List<InquiryApplication> getInquiryApplications(@PathVariable UUID id,
                                                          @AuthenticationPrincipal User currentUser) {
         return inquiryService.getInquiryApplications(id, currentUser);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Partially update an inquiry")
+    public Inquiry updateInquiry(@PathVariable UUID id,
+                              @RequestBody @Valid PartialInquiryUpdateDTO inquiryDTO,
+                              @AuthenticationPrincipal User currentUser) {
+        return inquiryService.updateInquiry(id, inquiryDTO, currentUser);
     }
 }

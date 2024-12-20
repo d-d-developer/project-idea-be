@@ -12,7 +12,6 @@ import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.payloads.project.NewProjectDTO;
 import project_idea.idea.payloads.project.RoadmapStepDTO;
-import project_idea.idea.payloads.project.PartialProjectUpdateDTO;
 import project_idea.idea.repositories.ProjectRepository;
 import project_idea.idea.repositories.RoadmapStepRepository;
 import project_idea.idea.repositories.PostRepository;
@@ -21,7 +20,6 @@ import project_idea.idea.enums.ProgressStatus;
 import project_idea.idea.enums.PostType;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -185,53 +183,5 @@ public class ProjectService {
     public RoadmapStep getStepById(UUID stepId) {
         return roadmapStepRepository.findById(stepId)
             .orElseThrow(() -> new NotFoundException("Roadmap step not found with id: " + stepId));
-    }
-
-    public Project updateProject(UUID projectId, PartialProjectUpdateDTO projectDTO, User currentUser) {
-        Project project = getProjectById(projectId);
-        
-        // Check if user is authorized to update the project
-        if (!project.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
-            throw new BadRequestException("Only project author can update the project");
-        }
-
-        // Update basic fields if provided
-        if (projectDTO.title() != null) {
-            project.setTitle(projectDTO.title());
-        }
-        
-        if (projectDTO.description() != null) {
-            project.setDescription(projectDTO.description());
-        }
-        
-        if (projectDTO.featured() != null) {
-            project.setFeatured(projectDTO.featured());
-        }
-
-        // Update language if provided
-        if (projectDTO.language() != null) {
-            if (!LanguageUtils.isValidLanguageCode(projectDTO.language())) {
-                throw new BadRequestException("Invalid language code: " + projectDTO.language());
-            }
-            project.setLanguage(LanguageUtils.normalizeLanguageCode(projectDTO.language()));
-        }
-
-        // Update categories if provided
-        if (projectDTO.categories() != null) {
-            project.getCategories().clear();
-            projectDTO.categories().forEach(categoryId ->
-                project.getCategories().add(categoryService.getCategoryById(categoryId)));
-        }
-
-        // Update participants if provided
-        if (projectDTO.participantProfileIds() != null) {
-            project.getParticipants().clear();
-            projectDTO.participantProfileIds().forEach(profileId -> {
-                SocialProfile participant = socialProfileService.findById(profileId);
-                project.getParticipants().add(participant);
-            });
-        }
-
-        return projectRepository.save(project);
     }
 }

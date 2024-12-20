@@ -29,18 +29,14 @@ public class ThreadService {
     @Autowired
     private PostRepository<Post> postRepository;
 
-    public void validateThreadForPost(Thread thread, Post post) {
-        // Check if thread already has a project post when trying to add a project
-        if (post.getType() == PostType.PROJECT && thread.getProjectPost() != null) {
-            throw new BadRequestException("Thread already has a project post");
-        }
-    }
-
     public Thread createThread(String title, String description, User currentUser) {
         Thread thread = new Thread();
         thread.setTitle(title);
         thread.setDescription(description);
         thread.setAuthorProfile(currentUser.getSocialProfile());
+        thread.setPosts(new ArrayList<>());
+        thread.setPinnedPosts(new ArrayList<>());
+        
         return threadRepository.save(thread);
     }
 
@@ -48,9 +44,11 @@ public class ThreadService {
         Thread thread = getThreadById(threadId);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
+        
         if (post.getThread() != null) {
-                       throw new BadRequestException("Post is already part of a thread");
+            throw new BadRequestException("Post is already part of a thread");
         }
+        
         thread.addPost(post);
         return threadRepository.save(thread);
     }
@@ -65,11 +63,7 @@ public class ThreadService {
         }
 
         post.setThread(null);
-        if (post.equals(thread.getProjectPost())) {
-            thread.setProjectPost(null);
-        } else {
-            thread.getPosts().remove(post);
-        }
+        thread.getPosts().remove(post);
 
         postRepository.save(post);
         return threadRepository.save(thread);
@@ -89,38 +83,26 @@ public class ThreadService {
     @Transactional
     public void deleteThread(UUID id, User currentUser) {
         Thread thread = getThreadById(id);
-        
+
         if (!thread.getAuthorProfile().getUser().getId().equals(currentUser.getId())) {
             throw new BadRequestException("You can only delete your own threads");
         }
 
-        // Create a new list to avoid concurrent modification
         List<Post> postsToUnlink = new ArrayList<>(thread.getPosts());
-        
-        // Unlink all regular posts
+
         postsToUnlink.forEach(post -> {
             thread.getPosts().remove(post);
             post.setThread(null);
             postRepository.save(post);
         });
 
-        // Create a new list for pinned posts
         List<Post> pinnedPostsToUnlink = new ArrayList<>(thread.getPinnedPosts());
-        
-        // Unlink pinned posts
+
         pinnedPostsToUnlink.forEach(post -> {
             thread.getPinnedPosts().remove(post);
             post.setThread(null);
             postRepository.save(post);
         });
-
-        // Unlink project post if exists
-        if (thread.getProjectPost() != null) {
-            Post projectPost = thread.getProjectPost();
-            thread.setProjectPost(null);
-            projectPost.setThread(null);
-            postRepository.save(projectPost);
-        }
 
         threadRepository.delete(thread);
     }
@@ -132,10 +114,6 @@ public class ThreadService {
 
         if (!thread.getPosts().contains(post)) {
             throw new BadRequestException("Post is not part of this thread");
-        }
-
-        if (post.getType() == PostType.PROJECT) {
-            throw new BadRequestException("Project posts cannot be pinned.");
         }
 
         if (!thread.canPinPost(post)) {
@@ -153,11 +131,25 @@ public class ThreadService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
 
+        // If it's a project post, remove it from thread completely
+        if (post.getType() == PostType.PROJECT) {
+            return removePostFromThread(threadId, postId, currentUser);
+        }
+
         if (!thread.getPinnedPosts().remove(post)) {
             throw new BadRequestException("Post is not pinned in this thread");
         }
         thread.getPosts().add(post);
 
         return threadRepository.save(thread);
+    }
+
+    public Page<Thread> getThreadsByUser(User user, int page, int size, String sortBy) {
+        if (size > 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        UUID profileId = user.getSocialProfile().getId();
+        
+        return threadRepository.findByAuthorProfileIdOrPostsAuthorProfileId(
+            profileId, profileId, pageable);
     }
 }

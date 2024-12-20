@@ -7,6 +7,7 @@ import project_idea.idea.entities.MultipleChoiceSurvey;
 import project_idea.idea.entities.SocialProfile;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.payloads.survey.MultipleChoiceSurveyResponseDTO;
+import project_idea.idea.payloads.survey.SurveyResponseWithProfileDTO;
 import project_idea.idea.repositories.MultipleChoiceResponseRepository;
 
 import java.util.List;
@@ -56,9 +57,19 @@ public class MultipleChoiceResponseService {
         return responseRepository.save(response);
     }
 
-    public List<MultipleChoiceResponse> getSurveyResponses(UUID surveyId) {
+    public List<SurveyResponseWithProfileDTO> getSurveyResponses(UUID surveyId) {
         MultipleChoiceSurvey survey = surveyService.getSurveyById(surveyId);
-        return responseRepository.findBySurvey(survey);
+        return responseRepository.findBySurvey(survey).stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+    
+    private SurveyResponseWithProfileDTO convertToDTO(MultipleChoiceResponse response) {
+        SurveyResponseWithProfileDTO dto = new SurveyResponseWithProfileDTO();
+        dto.setId(response.getId());
+        dto.setSocialProfile(response.getSocialProfile());
+        dto.setSelectedOptions(response.getSelectedOptions());
+        return dto;
     }
 
     public Map<String, Long> getResponseStatistics(UUID surveyId) {

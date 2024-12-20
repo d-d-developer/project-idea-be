@@ -300,7 +300,6 @@ public class PostController {
             @Parameter(name = "direction", description = "Sort direction (ASC or DESC)"),
             @Parameter(name = "language", description = "Filter by language (e.g., 'en', 'it')"),
             @Parameter(name = "type", description = "Filter by post type"),
-            @Parameter(name = "username", description = "Filter by username"),
             @Parameter(name = "categoryIds", description = "Filter by category IDs")
         }
     )
@@ -312,13 +311,12 @@ public class PostController {
             @RequestParam(defaultValue = "DESC") SortDirection direction,
             @RequestParam(required = false) String language,
             @RequestParam(required = false) PostType type,
-            @RequestParam(required = false) String username,
             @RequestParam(required = false) List<UUID> categoryIds,
             @AuthenticationPrincipal User currentUser) {
 
         Page<Post> postPage = postService.searchPosts(
             query, page, size, sortBy, direction, 
-            language, username, type, categoryIds, currentUser
+            language, type, categoryIds, currentUser
         );
 
         List<EntityModel<Post>> postModels = postPage.getContent().stream()

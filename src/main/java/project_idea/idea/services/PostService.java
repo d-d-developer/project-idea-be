@@ -17,6 +17,7 @@ import project_idea.idea.enums.Visibility;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.exceptions.NotFoundException;
 import project_idea.idea.repositories.PostRepository;
+import project_idea.idea.repositories.UsersRepository; // Added import for UsersRepository
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,18 +32,31 @@ public class PostService {
     private PostRepository<Post> postRepository;
 
     @Autowired
+    private UsersRepository usersRepository; // Added UsersRepository for user lookup
+
+    @Autowired
     private Cloudinary cloudinaryUploader;
 
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif"};
 
-    public Page<Post> getAllPosts(int page, int size, String sortBy, SortDirection direction, String language, PostType type, User currentUser) {
+    public Page<Post> getAllPosts(int page, int size, String sortBy, SortDirection direction, String language, PostType type, List<UUID> categoryIds, User currentUser) {
         if (size > 100) size = 100;
         Sort.Direction sortDirection = direction == SortDirection.DESC ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         boolean isAdmin = currentUser != null &&
             currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
+
+        // Handle category filtering
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            if (type != null) {
+                return postRepository.findByTypeAndCategoriesIdInAndVisibilityNot(
+                    type, categoryIds, Visibility.DELETED, pageable);
+            }
+            return postRepository.findByCategoriesIdInAndVisibilityNot(
+                categoryIds, Visibility.DELETED, pageable);
+        }
 
         // Handle type and language filters
         if (type != null && language != null) {
@@ -55,11 +69,17 @@ public class PostService {
         return postRepository.findByVisibilityNot(Visibility.DELETED, pageable);
     }
 
-    public Page<Post> getMyPosts(User currentUser, int page, int size, String sortBy, SortDirection direction, PostType type) {
+    public Page<Post> getMyPosts(User currentUser, int page, int size, String sortBy, SortDirection direction, PostType type, List<UUID> categoryIds) {
         Sort.Direction sortDirection = direction == SortDirection.DESC ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        return type != null ? postRepository.findByAuthorProfileIdAndType(currentUser.getSocialProfile().getId(), type, pageable)
-                           : postRepository.findByAuthorProfileId(currentUser.getSocialProfile().getId(), pageable);
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            return type != null ? 
+                postRepository.findByAuthorProfileIdAndTypeAndCategoriesIdIn(currentUser.getSocialProfile().getId(), type, categoryIds, pageable) :
+                postRepository.findByAuthorProfileIdAndCategoriesIdIn(currentUser.getSocialProfile().getId(), categoryIds, pageable);
+        }
+        return type != null ? 
+            postRepository.findByAuthorProfileIdAndType(currentUser.getSocialProfile().getId(), type, pageable) :
+            postRepository.findByAuthorProfileId(currentUser.getSocialProfile().getId(), pageable);
     }
 
     public Page<Post> getFeaturedPosts(int page, int size, String sortBy, SortDirection direction) {
@@ -69,13 +89,17 @@ public class PostService {
         return postRepository.findByFeaturedTrue(pageable);
     }
 
-    public Page<Post> getPostsBySocialProfile(UUID profileId, int page, int size, String sortBy, SortDirection direction, PostType type, User currentUser) {
+    public Page<Post> getPostsBySocialProfile(UUID profileId, int page, int size, String sortBy, SortDirection direction, PostType type, List<UUID> categoryIds, User currentUser) {
         if (size > 100) size = 100;
         Sort.Direction sortDirection = direction == SortDirection.DESC ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            return type != null ? 
+                postRepository.findByTypeAndCategoriesIdInAndFeaturedTrue(type, categoryIds, pageable) :
+                postRepository.findByCategoriesIdInAndFeaturedTrue(categoryIds, pageable);
+        }
         return type != null ? postRepository.findByAuthorProfileIdAndType(profileId, type, pageable)
-                           : (currentUser != null ? postRepository.findByAuthorProfileId(profileId, pageable)
-                                                : postRepository.findByAuthorProfileIdAndFeaturedTrue(profileId, pageable));
+                           : postRepository.findByAuthorProfileId(profileId, pageable);
     }
 
     public Post getPostById(UUID id) {
@@ -150,5 +174,45 @@ public class PostService {
                 return postRepository.findByCategoriesInAndVisibility(
                     currentUser.getInterests(), Visibility.ACTIVE, pageable);
         }
+    }
+
+    public Page<Post> getPostsByUsername(String username, int page, int size, String sortBy, 
+                                        SortDirection direction, PostType type, 
+                                        List<UUID> categoryIds, User currentUser) {
+        if (size > 100) size = 100;
+        Sort.Direction sortDirection = direction == SortDirection.DESC ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        
+        User targetUser = usersRepository.findBySocialProfile_Username(username)
+            .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+            
+        return getPostsBySocialProfile(targetUser.getSocialProfile().getId(), page, size, sortBy, direction, type, categoryIds, currentUser);
+    }
+
+    public Page<Post> searchPosts(
+            String query,
+            int page,
+            int size,
+            String sortBy,
+            SortDirection direction,
+            String language,
+            String username,
+            PostType type,
+            List<UUID> categoryIds,
+            User currentUser) {
+        
+        if (query == null || query.trim().isEmpty()) {
+            throw new BadRequestException("Search query cannot be empty");
+        }
+        
+        if (query.length() < 2) {
+            throw new BadRequestException("Search query must be at least 2 characters long");
+        }
+        
+        Sort.Direction sortDirection = direction == SortDirection.DESC ? 
+            Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        
+        return postRepository.searchPosts(query.trim(), language, type, username, categoryIds, pageable);
     }
 }

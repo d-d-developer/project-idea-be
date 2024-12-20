@@ -138,6 +138,11 @@ public class UsersService {
         return this.usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User with email " + email + " not found"));
     }
 
+    public User findByUsername(String username) {
+        return this.usersRepository.findBySocialProfile_Username(username)
+            .orElseThrow(() -> new NotFoundException("User with username " + username + " not found"));
+    }
+
     public User addRoleToUser(UUID userId, UUID roleId) {
         User user = findById(userId);
         Role role = roleService.getRoleById(roleId);

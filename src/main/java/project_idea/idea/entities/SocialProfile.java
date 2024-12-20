@@ -13,8 +13,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SocialProfile {
     @Id
     @GeneratedValue
@@ -45,7 +44,7 @@ public class SocialProfile {
     private Map<String, String> links = new HashMap<>();
 
     @JsonIgnore
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonBackReference("user-profile")
     private User user;

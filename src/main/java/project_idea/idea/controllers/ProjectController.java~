@@ -18,7 +18,6 @@ import project_idea.idea.entities.User;
 import project_idea.idea.enums.ProgressStatus;
 import project_idea.idea.exceptions.BadRequestException;
 import project_idea.idea.payloads.project.NewProjectDTO;
-import project_idea.idea.payloads.project.PartialProjectUpdateDTO;
 import project_idea.idea.services.AttachmentService;
 import project_idea.idea.services.ProjectService;
 
@@ -42,20 +41,6 @@ public class ProjectController {
     public Project createProject(@RequestBody @Valid NewProjectDTO projectDTO,
                                @AuthenticationPrincipal User currentUser) {
         return projectService.createProject(projectDTO, currentUser);
-    }
-
-    @PatchMapping("/{projectId}")
-    @Operation(summary = "Partially update a project")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Project updated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid request"),
-        @ApiResponse(responseCode = "404", description = "Project not found")
-    })
-    public Project updateProject(
-            @PathVariable UUID projectId,
-            @RequestBody @Valid PartialProjectUpdateDTO projectDTO,
-            @AuthenticationPrincipal User currentUser) {
-        return projectService.updateProject(projectId, projectDTO, currentUser);
     }
 
     @PostMapping("/{projectId}/participants/{profileId}")

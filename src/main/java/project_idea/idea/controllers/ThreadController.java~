@@ -6,9 +6,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -96,20 +93,5 @@ public class ThreadController {
     public void deleteThread(@PathVariable UUID id,
                            @AuthenticationPrincipal User currentUser) {
         threadService.deleteThread(id, currentUser);
-    }
-
-    @GetMapping("/me")
-    @Operation(
-        summary = "Get current user's threads",
-        description = "Retrieves all threads where the user is either the author or has posts"
-    )
-    @SecurityRequirement(name = "bearerAuth")
-    public PagedModel<EntityModel<Thread>> getMyThreads(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @AuthenticationPrincipal User currentUser) {
-        Page<Thread> threadPage = threadService.getThreadsByUser(currentUser, page, size, sortBy);
-        return pagedResourcesAssembler.toModel(threadPage);
     }
 }

@@ -24,6 +24,8 @@ import project_idea.idea.services.SocialProfileService;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/social-profiles")
@@ -107,5 +109,27 @@ public class SocialProfileController {
             @AuthenticationPrincipal User currentUser,
             @RequestBody PartialSocialProfileUpdateDTO updatedProfile) {
         return socialProfileService.patchSocialProfile(currentUser.getId(), updatedProfile);
+    }
+
+    @GetMapping("/search")
+    @Operation(
+        summary = "Search social profiles",
+        description = "Search for social profiles by name, surname, or username",
+        parameters = {
+            @Parameter(name = "query", description = "Search query string", required = true),
+            @Parameter(name = "page", description = "Page number (0-based)", example = "0"),
+            @Parameter(name = "size", description = "Number of items per page", example = "10"),
+            @Parameter(name = "sortBy", description = "Field to sort by", example = "username")
+        }
+    )
+    public PagedModel<EntityModel<SocialProfile>> searchProfiles(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "username") String sortBy
+    ) {
+        Sort sort = Sort.by(sortBy);
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
+        return pagedResourcesAssembler.toModel(socialProfileService.searchProfiles(query, pageRequest));
     }
 }

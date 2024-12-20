@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class SocialProfileService {
@@ -159,5 +161,15 @@ public class SocialProfileService {
     public SocialProfile findById(UUID id) {
         return socialProfileRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Social profile not found with id: " + id));
+    }
+    
+    public Page<SocialProfile> searchProfiles(String query, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
+            throw new BadRequestException("Search query cannot be empty");
+        }
+        if (query.length() < 2) {
+            throw new BadRequestException("Search query must be at least 2 characters long");
+        }
+        return socialProfileRepository.searchProfiles(query.trim(), pageable);
     }
 }

@@ -1,7 +1,6 @@
 package project_idea.idea.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,6 +17,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class MultipleChoiceResponse {
     @Id
     @GeneratedValue
@@ -26,7 +26,7 @@ public class MultipleChoiceResponse {
 
     @ManyToOne
     @JoinColumn(name = "survey_id")
-    @JsonBackReference
+    @JsonIgnore
     private MultipleChoiceSurvey survey;
 
     @ManyToOne

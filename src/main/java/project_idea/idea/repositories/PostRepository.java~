@@ -42,6 +42,7 @@ public interface PostRepository<T extends Post> extends JpaRepository<T, UUID> {
     Page<T> findByCategoriesInAndVisibility(Set<Category> categories, Visibility visibility, Pageable pageable);
     Page<T> findByAuthorProfileIdAndType(UUID authorId, PostType type, Pageable pageable);
     
+    // Add new methods for category filtering with various combinations
     Page<T> findByCategoriesIdInAndVisibilityNot(List<UUID> categoryIds, Visibility visibility, Pageable pageable);
     Page<T> findByTypeAndCategoriesIdInAndVisibilityNot(PostType type, List<UUID> categoryIds, Visibility visibility, Pageable pageable);
     Page<T> findByAuthorProfileIdAndCategoriesIdIn(UUID authorId, List<UUID> categoryIds, Pageable pageable);

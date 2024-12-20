@@ -46,7 +46,6 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
         // Handle thread association if threadId is provided
         if (surveyDTO.threadId() != null) {
             Thread thread = threadService.getThreadById(surveyDTO.threadId());
-            threadService.validateThreadForPost(thread, survey);
             survey.setThread(thread);
         }
         
@@ -84,7 +83,6 @@ public abstract class BaseSurveyService<T extends BaseSurvey> {
         // Handle thread association if threadId is provided
         if (surveyDTO.threadId() != null) {
             Thread thread = threadService.getThreadById(surveyDTO.threadId());
-            threadService.validateThreadForPost(thread, survey);
             survey.setThread(thread);
         }
         

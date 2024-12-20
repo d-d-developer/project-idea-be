@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import project_idea.idea.entities.Fundraiser;
 import project_idea.idea.entities.User;
 import project_idea.idea.payloads.fundraiser.NewFundraiserDTO;
-import project_idea.idea.payloads.fundraiser.PartialFundraiserUpdateDTO;
 import project_idea.idea.services.FundraiserService;
 
 import java.math.BigDecimal;
@@ -39,13 +38,5 @@ public class FundraiserController {
                                        @RequestParam BigDecimal amount,
                                        @AuthenticationPrincipal User currentUser) {
         return fundraiserService.updateRaisedAmount(id, amount, currentUser);
-    }
-
-    @PatchMapping("/{id}")
-    @Operation(summary = "Partially update a fundraiser")
-    public Fundraiser updateFundraiser(@PathVariable UUID id,
-                                    @RequestBody @Valid PartialFundraiserUpdateDTO fundraiserDTO,
-                                    @AuthenticationPrincipal User currentUser) {
-        return fundraiserService.updateFundraiser(id, fundraiserDTO, currentUser);
     }
 }

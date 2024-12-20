@@ -13,6 +13,8 @@ import java.util.UUID;
 public interface ThreadRepository extends JpaRepository<Thread, UUID> {
     Page<Thread> findByAuthorProfile(SocialProfile authorProfile, Pageable pageable);
     Page<Thread> findByPostsId(UUID postId, Pageable pageable);
-    Page<Thread> findByAuthorProfileIdOrPostsAuthorProfileId(UUID authorProfileId,
+    
+    // Add method to find threads by author or posts
+    Page<Thread> findByAuthorProfileIdOrPostsAuthorProfileId(UUID authorProfileId, 
         UUID postAuthorProfileId, Pageable pageable);
 }

@@ -1,6 +1,7 @@
 package project_idea.idea.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "posts")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -43,7 +45,6 @@ public abstract class Post {
     @JsonBackReference("thread-posts")
     private Thread thread;
 
-    // Add a method to get thread ID that will be included in JSON
     public UUID getThreadId() {
         if (thread != null) {
             return thread.getId();
@@ -85,6 +86,7 @@ public abstract class Post {
     
     @ManyToOne
     @JoinColumn(name = "author_profile_id", nullable = false)
+    @JsonIgnoreProperties({"user"})
     private SocialProfile authorProfile;
 
     @CreationTimestamp
